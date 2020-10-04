@@ -10,5 +10,10 @@ namespace DatingApp.API.Services
         Task<PhotoResponse> GetById(int id);
 
         Task<PhotoResponse> Upload(int userId, UploadRequest model);
+
+        Task SetMain(int userId, int photoId);
+
+        Task<Photo> GetMainPhoto(int userId);
+        
     }
 }

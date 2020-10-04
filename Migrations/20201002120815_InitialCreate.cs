@@ -26,7 +26,7 @@ namespace DatingApp.API.Migrations
                     Updated = table.Column<DateTime>(nullable: true),
                     Phone = table.Column<string>(nullable: true),
                     Gender = table.Column<string>(nullable: true),
-                    DateOfBirth = table.Column<DateTime>(nullable: false),
+                    DateOfBirth = table.Column<DateTime>(nullable: true),
                     LastActive = table.Column<DateTime>(nullable: false),
                     Introduction = table.Column<string>(nullable: true),
                     LookingFor = table.Column<string>(nullable: true),

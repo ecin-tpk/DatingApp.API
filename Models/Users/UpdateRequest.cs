@@ -16,7 +16,7 @@ namespace DatingApp.API.Models.Users
 
         public string Gender { get; set; }
 
-        private DateTime? DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         public string Introduction { get; set; }
 

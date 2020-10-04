@@ -35,7 +35,7 @@ namespace DatingApp.API.Entities
 
         public string Gender { get; set; }
 
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         public DateTime LastActive { get; set; }
 

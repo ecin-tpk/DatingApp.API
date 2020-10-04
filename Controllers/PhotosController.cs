@@ -52,40 +52,19 @@ namespace DatingApp.API.Controllers
             return CreatedAtRoute("GetById", new { userId, id = photo.Id }, photo);
         }
 
-        //        [HttpPost("{id}/setMain")]
-        //        public async Task<IActionResult> SetMainPhoto(int userId, int id)
-        //        {
-        //            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //            {
-        //                return Unauthorized();
-        //            }
+        [HttpPost("{id}/set-main")]
+        public async Task<IActionResult> SetMainPhoto(int userId, int photoId)
+        {
+            // Users can upload their own photo and admins can update any user's photo
+            if (userId != User.Id && User.Role != Entities.Role.Admin)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-        //            var user = await _repo.GetUser(userId);
+            await _photoService.SetMain(userId, photoId);
 
-        //            if (!user.Photos.Any(p => p.Id == id))
-        //            {
-        //                return Unauthorized();
-        //            }
-
-        //            var photoFromRepo = await _repo.GetPhoto(id);
-
-        //            if (photoFromRepo.IsMain)
-        //            {
-        //                return BadRequest("This is already the main photo");
-        //            }
-
-        //            var currentMainPhoto = await _repo.GetMainPhotoForUser(userId);
-
-        //            currentMainPhoto.IsMain = false;
-
-        //            photoFromRepo.IsMain = true;
-
-        //            if (await _repo.SaveAll())
-        //            {
-        //                return NoContent();
-        //            }
-        //            return BadRequest("Could not set photo to main");
-        //        }
+            return NoContent();
+        }
 
         //        [HttpDelete("{id}")]
         //        public async Task<IActionResult> DeletePhoto(int userId, int id)

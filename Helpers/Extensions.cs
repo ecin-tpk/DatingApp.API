@@ -25,12 +25,16 @@ namespace DatingApp.API.Helpers
             response.Headers.Add("Access-Control-Expose-Headers", "Pagination");
         }
 
-        public static int CalculateAge(this DateTime theDateTime)
+        public static int CalculateAge(this DateTime? theDateTime)
         {
-            var age = DateTime.Today.Year - theDateTime.Year;
-            if (theDateTime.AddYears(age) > DateTime.Today)
+            var age = 0;
+            if (theDateTime.HasValue)
             {
-                age--;
+                age = DateTime.Today.Year - theDateTime.Value.Year;
+                if (theDateTime.Value.AddYears(age) > DateTime.Today)
+                {
+                    age--;
+                }
             }
 
             return age;

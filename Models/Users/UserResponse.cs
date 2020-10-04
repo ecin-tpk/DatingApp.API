@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using DatingApp.API.Models.Photos;
+
 namespace DatingApp.API.Models.Users
 {
     public class UserResponse
@@ -38,5 +41,7 @@ namespace DatingApp.API.Models.Users
         public string Status { get; set; }
 
         public string PhotoUrl { get; set; }
+
+        public ICollection<PhotoResponse> Photos { get; set; }
     }
 }

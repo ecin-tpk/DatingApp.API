@@ -50,7 +50,7 @@ namespace DatingApp.API.Services
         // Upload image to Cloudinary
         public async Task<PhotoResponse> Upload(int userId, UploadRequest model)
         {
-            var userFromRepo = await _userService.GetUser(userId);
+            var userInDb = await _userService.GetUser(userId);
 
             var uploadResult = new ImageUploadResult();
 
@@ -74,12 +74,12 @@ namespace DatingApp.API.Services
 
             var photo = _mapper.Map<Photo>(model);
 
-            if (!userFromRepo.Photos.Any(u => u.IsMain))
+            if (!userInDb.Photos.Any(u => u.IsMain))
             {
                 photo.IsMain = true;
             }
 
-            userFromRepo.Photos.Add(photo);
+            userInDb.Photos.Add(photo);
 
             if (await _context.SaveChangesAsync() > 0)
             {
@@ -87,6 +87,38 @@ namespace DatingApp.API.Services
             }
 
             throw new AppException("Upload failed");
+        }
+
+        // Set a photo as main photo
+        public async Task SetMain(int userId, int photoId)
+        {
+            var userInDb = await _userService.GetUser(userId);
+
+            if (!userInDb.Photos.Any(p => p.Id == photoId))
+            {
+                throw new AppException("Could not find a photo with given id");
+            }
+
+            var photoInDb = await GetById(photoId);
+
+            if (photoInDb.IsMain)
+            {
+                throw new AppException("This is already the main photo");
+            }
+
+            var currentMainPhoto = await GetMainPhoto(userId);
+
+            currentMainPhoto.IsMain = false;
+
+            photoInDb.IsMain = true;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Get the main photo by userId
+        public async Task<Photo> GetMainPhoto(int userId)
+        {
+            return await _context.Photos.Where(u => u.UserId == userId).SingleOrDefaultAsync(p => p.IsMain);
         }
     }
 }
