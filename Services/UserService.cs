@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Models.Admin;
 using DatingApp.API.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -148,6 +149,37 @@ namespace DatingApp.API.Services
             var deletedCount = await _context.Users.Where(u => u.Status == Status.Deleted && u.Role != Role.Admin).CountAsync();
 
             return new int[] { activeCount, disalbedCount, deletedCount };
+        }
+
+        public async Task<UserResponse> Create(CreateRequest model)
+        {
+            if (_context.Users.Any(u => u.Email == model.Email))
+                throw new AppException($"Email '{model.Email}' is already used");
+
+            var user = _mapper.Map<User>(model);
+            user.Created = DateTime.Now;
+            user.Verified = DateTime.Now;
+
+            byte[] passwordHash, passwordSalt;
+            CreatePasswordHash(model.Password, out passwordHash, out passwordSalt);
+
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<UserResponse>(user);
+        }
+
+        // Hash password
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            }
         }
     }
 }

@@ -53,7 +53,7 @@ namespace DatingApp.API.Controllers
         }
 
         [HttpPost("{id}/set-main")]
-        public async Task<IActionResult> SetMainPhoto(int userId, int photoId)
+        public async Task<IActionResult> SetMainPhoto(int userId, int id)
         {
             // Users can upload their own photo and admins can update any user's photo
             if (userId != User.Id && User.Role != Entities.Role.Admin)
@@ -61,7 +61,7 @@ namespace DatingApp.API.Controllers
                 return Unauthorized(new { message = "Unauthorized" });
             }
 
-            await _photoService.SetMain(userId, photoId);
+            await _photoService.SetMain(userId, id);
 
             return NoContent();
         }

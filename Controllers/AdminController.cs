@@ -4,6 +4,7 @@ using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
 using DatingApp.API.Models.Account;
+using DatingApp.API.Models.Admin;
 using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
 using DeviceDetectorNET;
@@ -57,6 +58,16 @@ namespace DatingApp.API.Controllers
             Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
             return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
+        }
+
+        // GET: Create user
+        [HttpPost("users")]
+        [Authorize(Role.Admin)]
+        public async Task<IActionResult> Create(CreateRequest model)
+        {
+            var user = await _userService.Create(model);
+
+            return Ok(user);
         }
 
         // GET: Get number of users by status

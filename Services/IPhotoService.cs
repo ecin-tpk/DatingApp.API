@@ -7,7 +7,7 @@ namespace DatingApp.API.Services
 {
     public interface IPhotoService
     {
-        Task<PhotoResponse> GetById(int id);
+        Task<Photo> GetById(int id);
 
         Task<PhotoResponse> Upload(int userId, UploadRequest model);
 

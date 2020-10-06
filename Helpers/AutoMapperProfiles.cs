@@ -3,6 +3,7 @@ using AutoMapper;
 using DatingApp.API.Dtos;
 using DatingApp.API.Entities;
 using DatingApp.API.Models.Account;
+using DatingApp.API.Models.Admin;
 using DatingApp.API.Models.Photos;
 using DatingApp.API.Models.Users;
 
@@ -23,6 +24,7 @@ namespace DatingApp.API.Helpers
                 .ForMember(dest => dest.Age, opt => opt.MapFrom(src => src.DateOfBirth.CalculateAge()));
             CreateMap<User, UserResponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
+            CreateMap<CreateRequest, User>();
             CreateMap<UpdateRequest, User>()
                 .ForAllMembers(x => x.Condition((src, dest, prop) =>
                 {

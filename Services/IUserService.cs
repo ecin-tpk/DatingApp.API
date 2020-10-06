@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Models.Admin;
 using DatingApp.API.Models.Users;
 
 namespace DatingApp.API.Services
@@ -17,5 +18,7 @@ namespace DatingApp.API.Services
         Task<User> GetUser(int id);
 
         Task<int[]> GetNumberOfUsersByStatus();
+
+        Task<UserResponse> Create(CreateRequest model);
     }
 }

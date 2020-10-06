@@ -40,11 +40,9 @@ namespace DatingApp.API.Services
         }
 
         // Get photo by id
-        public async Task<PhotoResponse> GetById(int id)
+        public async Task<Photo> GetById(int id)
         {
-            var photo = await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
-
-            return _mapper.Map<PhotoResponse>(photo);
+            return await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
         }
 
         // Upload image to Cloudinary

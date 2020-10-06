@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using DatingApp.API.Models.Photos;
 
 namespace DatingApp.API.Models.Account
 {
@@ -42,6 +44,8 @@ namespace DatingApp.API.Models.Account
         public string Status { get; set; }
 
         public string JwtToken { get; set; }
+
+        public ICollection<PhotoResponse> Photos { get; set; }
 
         // Refresh token is returned in http only cookie
         [JsonIgnore]
