@@ -13,6 +13,8 @@ namespace DatingApp.API.Services
 
         Task SetMain(int userId, int photoId);
 
+        Task Delete(int userId, int photoId);
+
         Task<Photo> GetMainPhoto(int userId);
         
     }

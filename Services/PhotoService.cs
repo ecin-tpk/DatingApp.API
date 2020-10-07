@@ -113,6 +113,43 @@ namespace DatingApp.API.Services
             await _context.SaveChangesAsync();
         }
 
+        // Delete photo
+        public async Task Delete(int userId, int photoId)
+        {
+            var userInDb = await _userService.GetUser(userId);
+
+            if (!userInDb.Photos.Any(p => p.Id == photoId))
+            {
+                throw new AppException("Could not find a photo with given id");
+            }
+
+            var photoInDb = await GetById(photoId);
+
+            if (photoInDb.IsMain)
+            {
+                throw new AppException("Cannot delete main photo");
+            }
+
+            // Delete photo on cloud if it is on cloud
+            if (photoInDb.PublicID != null)
+            {
+                var deleteParams = new DeletionParams(photoInDb.PublicID);
+
+                var result = _cloudinary.Destroy(deleteParams);
+
+                if (result.Result == "ok")
+                {
+                    _context.Remove(photoInDb);
+                }
+            }
+            else
+            {
+                _context.Remove(photoInDb);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         // Get the main photo by userId
         public async Task<Photo> GetMainPhoto(int userId)
         {

@@ -151,6 +151,7 @@ namespace DatingApp.API.Services
             return new int[] { activeCount, disalbedCount, deletedCount };
         }
 
+        // Create new user
         public async Task<UserResponse> Create(CreateRequest model)
         {
             if (_context.Users.Any(u => u.Email == model.Email))

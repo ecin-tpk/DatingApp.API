@@ -45,6 +45,19 @@ namespace DatingApp.API.Controllers
             return Ok(response);
         }
 
+        // POST: Login with facebook
+        [HttpPost("login/facebook")]
+        public async Task<IActionResult> FacebookLoginAsync([FromBody] FacebookLoginRequest model)
+        {
+            var dd = new DeviceDetector(Request.Headers["User-Agent"]);
+
+            var response = await _accountService.FacebookLogin(model, IpAddress(), dd);
+
+            Response.SetTokenCookie(response.RefreshToken);
+
+            return Ok(response);
+        }
+
         // POST: Verify email
         [HttpPost("verify-email")]
         public IActionResult VerifyEmail(VerifyEmailRequest model)

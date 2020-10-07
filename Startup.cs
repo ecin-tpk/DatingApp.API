@@ -25,24 +25,16 @@ namespace DatingApp.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false).AddNewtonsoftJson(opt => { opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; });
-
             services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-
             services.AddCors();
-
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
-
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
-
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
             services.AddScoped<IEmailService, EmailService>();
-
             services.AddScoped<IAccountService, AccountService>();
-
             services.AddScoped<IUserService, UserService>();
-
             services.AddScoped<IPhotoService, PhotoService>();
+            services.AddScoped<IFacebookService, FacebookService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

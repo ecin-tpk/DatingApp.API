@@ -30,13 +30,16 @@ namespace DatingApp.API.Services
 
         private readonly IUserService _userService;
 
-        public AccountService(DataContext context, IMapper mapper, IOptions<AppSettings> appSettings, IEmailService emailService, IUserService userService)
+        private readonly IFacebookService _facebookService;
+
+        public AccountService(DataContext context, IMapper mapper, IOptions<AppSettings> appSettings, IEmailService emailService, IUserService userService, IFacebookService facebookService)
         {
             _context = context;
             _mapper = mapper;
             _appSettings = appSettings.Value;
             _emailService = emailService;
             _userService = userService;
+            _facebookService = facebookService;
         }
 
         // Register
@@ -88,6 +91,61 @@ namespace DatingApp.API.Services
             _context.Update(user);
 
             await _context.SaveChangesAsync();
+
+            var jwtToken = GenerateJwtToken(user);
+
+            var response = _mapper.Map<LoginResponse>(user);
+            response.JwtToken = jwtToken;
+            response.RefreshToken = refreshToken.Token;
+
+            return response;
+        }
+
+        // Login with facebook
+        public async Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector)
+        {
+            if (string.IsNullOrEmpty(model.facebookToken))
+            {
+                throw new AppException("Invalid token");
+            }
+
+            var facebookUser = await _facebookService.GetUser(model.facebookToken);
+
+            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == facebookUser.Email);
+
+            // Create new user in db to store needed info
+            if (user == null)
+            {
+                var userToCreate = _mapper.Map<User>(facebookUser);
+                userToCreate.Name = $"{facebookUser.FirstName} {facebookUser.LastName}";
+                userToCreate.Created = DateTime.Now;
+                userToCreate.Role = Role.User;
+                userToCreate.Status = Status.Active;
+                userToCreate.Verified = DateTime.Now;
+
+                _context.Users.Add(userToCreate);
+
+                // Add photo url after save to db to have user id
+                if (await _context.SaveChangesAsync() > 0)
+                {
+                    var createdUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == facebookUser.Email);
+
+                    var photo = new Photo
+                    {
+                        Url = facebookUser.Picture,
+                        DateAdded = DateTime.Now,
+                        IsMain = true
+                    };
+
+                    createdUser.Photos.Add(photo);
+
+                    await _context.SaveChangesAsync();
+                }
+
+                user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == facebookUser.Email);
+            }
+
+            var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);
 
             var jwtToken = GenerateJwtToken(user);
 
