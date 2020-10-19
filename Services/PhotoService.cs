@@ -27,15 +27,10 @@ namespace DatingApp.API.Services
         public PhotoService(DataContext context, IMapper mapper, IUserService userService, IOptions<CloudinarySettings> cloudinarySettings)
         {
             _context = context;
-
             _mapper = mapper;
-
             _userService = userService;
-
             _cloudinarySettings = cloudinarySettings;
-
             Account account = new Account(_cloudinarySettings.Value.CloudName, _cloudinarySettings.Value.ApiKey, _cloudinarySettings.Value.ApiSecret);
-
             _cloudinary = new Cloudinary(account);
         }
 

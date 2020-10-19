@@ -19,6 +19,8 @@ namespace DatingApp.API.Services
 
         Task<int[]> GetNumberOfUsersByStatus();
 
-        Task<UserResponse> Create(CreateRequest model);
+        Task<UserResponse> Create(NewUserRequest model);
+
+        Task<int[]> GetNewUsersPerMonth(int year);
     }
 }

@@ -29,7 +29,7 @@ namespace DatingApp.API.Controllers
         }
 
         // GET: Get photo by id
-        [HttpGet("{id}", Name = "GetById")]
+        [HttpGet("{id}", Name = "GetPhotoById")]
         public async Task<IActionResult> GetById(int id)
         {
             var photo = await _photoService.GetById(id);
@@ -49,7 +49,7 @@ namespace DatingApp.API.Controllers
 
             var photo = await _photoService.Upload(userId, model);
 
-            return CreatedAtRoute("GetById", new { userId, id = photo.Id }, photo);
+            return CreatedAtRoute("GetPhotoById", new { userId, id = photo.Id }, photo);
         }
 
         [HttpPost("{id}/set-main")]

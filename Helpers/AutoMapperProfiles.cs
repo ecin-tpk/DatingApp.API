@@ -4,6 +4,7 @@ using DatingApp.API.Dtos;
 using DatingApp.API.Entities;
 using DatingApp.API.Models.Account;
 using DatingApp.API.Models.Admin;
+using DatingApp.API.Models.Messages;
 using DatingApp.API.Models.Photos;
 using DatingApp.API.Models.Users;
 
@@ -24,7 +25,7 @@ namespace DatingApp.API.Helpers
                 .ForMember(dest => dest.Age, opt => opt.MapFrom(src => src.DateOfBirth.CalculateAge()));
             CreateMap<User, UserResponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
-            CreateMap<CreateRequest, User>();
+            CreateMap<NewUserRequest, User>();
             CreateMap<UpdateRequest, User>()
                 .ForAllMembers(x => x.Condition((src, dest, prop) =>
                 {
@@ -57,8 +58,8 @@ namespace DatingApp.API.Helpers
             CreateMap<Photo, PhotoForReturnDto>();
             CreateMap<PhotoForCreationDto, Photo>();
 
-            CreateMap<MessageForCreationDto, Message>().ReverseMap();
-            CreateMap<Message, MessageToReturnDto>()
+            CreateMap<NewMessageRequest, Message>().ReverseMap();
+            CreateMap<Message, MessageResponse>()
                 .ForMember(m => m.SenderPhotoUrl, opt => opt.MapFrom(u => u.Sender.Photos.FirstOrDefault(p => p.IsMain).Url))
                 .ForMember(m => m.RecipientPhotoUrl, opt => opt.MapFrom(u => u.Recipient.Photos.FirstOrDefault(p => p.IsMain).Url));
         }

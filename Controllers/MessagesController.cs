@@ -5,45 +5,55 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Data;
 using DatingApp.API.Dtos;
+using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Hubs;
 using DatingApp.API.Models;
+using DatingApp.API.Models.Messages;
+using DatingApp.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DatingApp.API.Controllers
 {
     [ApiController]
     [Route("api/users/{userId}/[controller]")]
     [Authorize]
-    public class MessagesController : ControllerBase
+    public class MessagesController : BaseController
     {
+        private readonly IMessageService _messageService;
+
+        private readonly IHubContext<MessagesHub, IMessagesClient> _messagesHub;
+
         //private readonly IDatingRepository _repo;
 
         //private readonly IMapper _mapper;
 
-        //public MessagesController(IDatingRepository repo, IMapper mapper)
-        //{
-        //    _repo = repo;
-        //    _mapper = mapper;
-        //}
+        public MessagesController(IMessageService messageService, IHubContext<MessagesHub, IMessagesClient> messagesHub)
+        {
+            _messageService = messageService;
+            _messagesHub = messagesHub;
+        }
 
-        //[HttpGet("{id}", Name ="GetMessage")]
-        //public async Task<IActionResult> GetMessage(int userId, int id)
-        //{
-        //    if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //    {
-        //        return Unauthorized();
-        //    }
+        // GET: Get message by id
+        [HttpGet("{id}", Name = "GetMessageById")]
+        public async Task<IActionResult> GetById(int userId, int id)
+        {
+            // Users can see their own data and admins can see any user's data
+            if (userId != User.Id && User.Role != Role.Admin)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-        //    var messageFromRepo = await _repo.GetMessage(id);
+            var message = await _messageService.GetById(id);
+            if (message == null)
+            {
+                return NotFound();
+            }
 
-        //    if (messageFromRepo == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return Ok(messageFromRepo);
-        //}
+            return Ok(message);
+        }
 
         //[HttpGet]
         //public async Task<IActionResult> GetMessagesForUser(int userId, [FromQuery]MessageParams messageParams)
@@ -64,54 +74,36 @@ namespace DatingApp.API.Controllers
         //    return Ok(messages);
         //}
 
-        //[HttpGet("thread/{recipientId}")]
-        //public async Task<IActionResult> GetMessageThread(int userId, int recipientId)
-        //{
-        //    if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //    {
-        //        return Unauthorized();
-        //    }
+        // GET: Get message thread
+        [HttpGet("thread/{recipientId}")]
+        public async Task<IActionResult> GetMessageThread(int userId, int recipientId)
+        {
+            // Users can see their own data and admins can see any user's data
+            if (userId != User.Id && User.Role != Role.Admin)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-        //    var messageFromRepo = await _repo.GetMessageThread(userId, recipientId);
+            var messageThread = await _messageService.GetMessageThread(userId, recipientId);
 
-        //    var messageThread = _mapper.Map<IEnumerable<MessageToReturnDto>>(messageFromRepo);
+            return Ok(messageThread);
+        }
 
-        //    return Ok(messageThread);
-        //}
+        // POST: Send messages
+        [HttpPost]
+        public async Task<IActionResult> CreateMessage(int userId, NewMessageRequest model)
+        {
+            if (userId != User.Id)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-        //// POST
-        //[HttpPost]
-        //public async Task<IActionResult> CreateMessage(int userId, MessageForCreationDto messageForCreationDto)
-        //{
-        //    var sender = await _repo.GetUser(userId);
+            var message = await _messageService.Create(userId, model);
 
-        //    if (sender.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //    {
-        //        return Unauthorized();
-        //    }
+            await _messagesHub.Clients.All.ReceiveMessage(message);
 
-        //    messageForCreationDto.SenderId = userId;
-
-        //    var recipient = await _repo.GetUser(messageForCreationDto.RecipientId);
-
-        //    if (recipient == null)
-        //    {
-        //        return BadRequest("Could not find user");
-        //    }
-
-        //    var message = _mapper.Map<Message>(messageForCreationDto);
-
-        //    _repo.Add(message);
-
-        //    if(await _repo.SaveAll())
-        //    {
-        //        var messageToReturn = _mapper.Map<MessageToReturnDto>(message);
-
-        //        return CreatedAtRoute("GetMessage", new {userId, id = message.Id }, messageToReturn);
-        //    }
-
-        //    throw new Exception("Creating the message failed on save");
-        //}
+            return CreatedAtRoute("GetMessageById", new { userId, id = message.Id }, message);
+        }
 
         //// POST (Remove Message From Sender Or Recipient)
         //[HttpPost("{id}")]

@@ -1,19 +1,23 @@
 ﻿using System;
-namespace DatingApp.API.Dtos
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace DatingApp.API.Models.Messages
 {
-    public class MessageToReturnDto
+    public class MessageResponse
     {
         public int Id { get; set; }
 
         public int SenderId { get; set; }
 
-        public string SenderKnownAs { get; set; }
+        public string SenderName { get; set; }
 
         public string SenderPhotoUrl { get; set; }
 
         public int RecipientId { get; set; }
 
-        public string RecipientKnownAs { get; set; }
+        public string RecipientName { get; set; }
 
         public string RecipientPhotoUrl { get; set; }
 

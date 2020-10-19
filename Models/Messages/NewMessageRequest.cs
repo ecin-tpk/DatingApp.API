@@ -1,7 +1,11 @@
 ﻿using System;
-namespace DatingApp.API.Dtos
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace DatingApp.API.Models.Messages
 {
-    public class MessageForCreationDto
+    public class NewMessageRequest
     {
         public int SenderId { get; set; }
 
@@ -11,7 +15,7 @@ namespace DatingApp.API.Dtos
 
         public string Content { get; set; }
 
-        public MessageForCreationDto()
+        public NewMessageRequest()
         {
             MessageSent = DateTime.Now;
         }

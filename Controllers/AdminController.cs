@@ -63,7 +63,7 @@ namespace DatingApp.API.Controllers
         // GET: Create user
         [HttpPost("users")]
         [Authorize(Role.Admin)]
-        public async Task<IActionResult> Create(CreateRequest model)
+        public async Task<IActionResult> Create(NewUserRequest model)
         {
             var user = await _userService.Create(model);
 
@@ -71,13 +71,23 @@ namespace DatingApp.API.Controllers
         }
 
         // GET: Get number of users by status
-        [HttpGet("users/status")]
+        [HttpGet("users/status-count")]
         [Authorize(Role.Admin)]
         public async Task<IActionResult> GetNumberOfUsersByStatus()
         {
             var countByStatus = await _userService.GetNumberOfUsersByStatus();
 
             return Ok(countByStatus);
+        }
+
+        // GET: Get number of users by status
+        [HttpGet("users/new-users-per-month/{year:int}")]
+        [Authorize(Role.Admin)]
+        public async Task<IActionResult> GetNewUsersPerMonth(int year)
+        {
+            var newUsersPerMonth = await _userService.GetNewUsersPerMonth(year);
+
+            return Ok(newUsersPerMonth);
         }
 
         // Get IP address

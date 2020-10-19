@@ -20,7 +20,6 @@ namespace DatingApp.API.Controllers
         public UsersController(IMapper mapper, IUserService userService)
         {
             _mapper = mapper;
-
             _userService = userService;
         }
 

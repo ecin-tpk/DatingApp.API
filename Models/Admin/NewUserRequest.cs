@@ -4,7 +4,7 @@ using DatingApp.API.Entities;
 
 namespace DatingApp.API.Models.Admin
 {
-    public class CreateRequest
+    public class NewUserRequest
     {
         [Required]
         public string Email { get; set; }

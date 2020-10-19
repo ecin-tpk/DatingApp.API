@@ -41,9 +41,17 @@ namespace DatingApp.API.Entities
 
         public string Introduction { get; set; }
 
-        public string LookingFor { get; set; }
-
         public string Interests { get; set; }
+
+        public int Height { get; set; }
+
+        public string SexualOrientation { get; set; }
+
+        public string JobTitle { get; set; }
+
+        public string School { get; set; }
+
+        public string Company { get; set; }
 
         public string City { get; set; }
 

@@ -151,8 +151,23 @@ namespace DatingApp.API.Services
             return new int[] { activeCount, disalbedCount, deletedCount };
         }
 
+        // Get number of new users permonth
+        public async Task<int[]> GetNewUsersPerMonth(int year)
+        {
+            var users = _context.Users.Where(u => u.Created.Year == year);
+
+            var newUsersPerMonth = new int[12];
+
+            for (int i = 0; i < 12; i++)
+            {
+                newUsersPerMonth[i] = await users.Where(u => u.Created.Month == i + 1).CountAsync();
+            }
+
+            return newUsersPerMonth;
+        }
+
         // Create new user
-        public async Task<UserResponse> Create(CreateRequest model)
+        public async Task<UserResponse> Create(NewUserRequest model)
         {
             if (_context.Users.Any(u => u.Email == model.Email))
                 throw new AppException($"Email '{model.Email}' is already used");

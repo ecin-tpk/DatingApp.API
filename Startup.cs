@@ -1,6 +1,7 @@
 using System;
 using AutoMapper;
 using DatingApp.API.Helpers;
+using DatingApp.API.Hubs;
 using DatingApp.API.Middleware;
 using DatingApp.API.Services;
 using Microsoft.AspNetCore.Builder;
@@ -35,26 +36,25 @@ namespace DatingApp.API
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IFacebookService, FacebookService>();
+            services.AddScoped<IMessageService, MessageService>();
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseRouting();
-
             app.UseCors(x => x
             .SetIsOriginAllowed(origin => true)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
-
             app.UseMiddleware<ErrorHandlerMiddleware>();
-
             app.UseMiddleware<JwtMiddleware>();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<MessagesHub>("/hubs/messages");
             });
         }
     }
