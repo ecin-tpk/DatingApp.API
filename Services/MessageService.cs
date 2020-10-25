@@ -73,5 +73,17 @@ namespace DatingApp.API.Services
 
             return _mapper.Map<IEnumerable<MessageResponse>>(messages);
         }
+
+        public async Task<PagedList<Message>> GetPagination(MessageThreadParams msgThreadparams)
+        {
+            var messages = _context.Messages
+                .Include(u => u.Sender).ThenInclude(p => p.Photos)
+                .Include(u => u.Recipient).ThenInclude(p => p.Photos)
+                .Where(m => m.RecipientId == msgThreadparams.UserId && m.RecipientDeleted == false && m.SenderId == msgThreadparams.RecipientId
+                || m.RecipientId == msgThreadparams.RecipientId && m.SenderDeleted == false && m.SenderId == msgThreadparams.UserId).AsQueryable()
+                .OrderBy(m => m.MessageSent);
+
+            return await PagedList<Message>.CreateAsync(messages, msgThreadparams.PageNumber, msgThreadparams.PageSize);
+        }
     }
 }

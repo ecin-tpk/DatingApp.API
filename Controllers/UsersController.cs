@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
@@ -65,30 +66,18 @@ namespace DatingApp.API.Controllers
         //    return Ok(usersToReturn);
         //}
 
-        //// GET: Get all users for admin
-        //[HttpGet("admin")]
-        //[Authorize(Roles = "admin")]
-        //public async Task<IActionResult> GetUsersForAdmin([FromQuery] UserParams userParams)
-        //{
-        //    var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        // GET: Get users (paginated)
+        [HttpGet("users")]
+        public async Task<IActionResult> GetPagination([FromQuery] UserParams userParams)
+        {
+            userParams.UserId = User.Id;
 
-        //    userParams.UserId = currentUserId;
+            var users = await _userService.GetPagination(userParams);
 
-        //    if (string.IsNullOrEmpty(userParams.Gender))
-        //    {
-        //        userParams.Gender = "any";
-        //    }
+            Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
-        //    var users = await _repo.GetUsers(userParams);
-
-        //    var usersToReturn = _mapper.Map<IEnumerable<UserForAdmin>>(users);
-
-        //    Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
-
-        //    return Ok(usersToReturn);
-        //}
-
-
+            return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
+        }
 
         // GET: Get a specific user by id
         [HttpGet("{id:int}")]

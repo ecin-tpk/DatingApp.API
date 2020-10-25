@@ -16,5 +16,7 @@ namespace DatingApp.API.Services
         Task<PagedList<Message>> GetMessageForUser();
 
         Task<IEnumerable<MessageResponse>> GetMessageThread(int userId, int recipientId);
+
+        Task<PagedList<Message>> GetPagination(MessageThreadParams msgThreadparams);
     }
 }

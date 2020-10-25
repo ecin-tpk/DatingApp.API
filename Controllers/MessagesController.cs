@@ -3,15 +3,11 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using DatingApp.API.Data;
-using DatingApp.API.Dtos;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
 using DatingApp.API.Hubs;
-using DatingApp.API.Models;
 using DatingApp.API.Models.Messages;
 using DatingApp.API.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -24,16 +20,15 @@ namespace DatingApp.API.Controllers
     {
         private readonly IMessageService _messageService;
 
-        private readonly IHubContext<MessagesHub, IMessagesClient> _messagesHub;
+        private readonly IHubContext<MessagesHub> _messagesHub;
 
-        //private readonly IDatingRepository _repo;
+        private readonly IMapper _mapper;
 
-        //private readonly IMapper _mapper;
-
-        public MessagesController(IMessageService messageService, IHubContext<MessagesHub, IMessagesClient> messagesHub)
+        public MessagesController(IMessageService messageService, IHubContext<MessagesHub> messagesHub, IMapper mapper)
         {
             _messageService = messageService;
             _messagesHub = messagesHub;
+            _mapper = mapper;
         }
 
         // GET: Get message by id
@@ -74,19 +69,18 @@ namespace DatingApp.API.Controllers
         //    return Ok(messages);
         //}
 
-        // GET: Get message thread
-        [HttpGet("thread/{recipientId}")]
-        public async Task<IActionResult> GetMessageThread(int userId, int recipientId)
+        // GET: Get message thread (paginated)
+        [HttpGet("thread/{recipientId:int}")]
+        public async Task<IActionResult> GetPagination(int recipientId, [FromQuery] MessageThreadParams msgThreadParams)
         {
-            // Users can see their own data and admins can see any user's data
-            if (userId != User.Id && User.Role != Role.Admin)
-            {
-                return Unauthorized(new { message = "Unauthorized" });
-            }
+            msgThreadParams.UserId = User.Id;
+            msgThreadParams.RecipientId = recipientId;
 
-            var messageThread = await _messageService.GetMessageThread(userId, recipientId);
+            var messages = await _messageService.GetPagination(msgThreadParams);
 
-            return Ok(messageThread);
+            Response.AddPagination(messages.CurrentPage, messages.PageSize, messages.TotalCount, messages.TotalPages);
+
+            return Ok(_mapper.Map<IEnumerable<MessageResponse>>(messages));
         }
 
         // POST: Send messages
@@ -100,7 +94,9 @@ namespace DatingApp.API.Controllers
 
             var message = await _messageService.Create(userId, model);
 
-            await _messagesHub.Clients.All.ReceiveMessage(message);
+            //await _messagesHub.Clients.All.ReceiveMessage(message);
+
+            await _messagesHub.Clients.All.SendAsync("ReceiveMessage", message);
 
             return CreatedAtRoute("GetMessageById", new { userId, id = message.Id }, message);
         }
