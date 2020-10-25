@@ -24,48 +24,6 @@ namespace DatingApp.API.Controllers
             _userService = userService;
         }
 
-        //// GET: Get all users for normal user (paginated)
-        //[HttpGet]
-        //public async Task<IActionResult> GetUsers([FromQuery] UserParams userParams)
-        //{
-        //    var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-        //    var userFromRepo = await _repo.GetUser(currentUserId);
-
-        //    userParams.UserId = currentUserId;
-
-        //    // Prevent normal user search by name
-        //    if ((!string.IsNullOrEmpty(userParams.Name) && userFromRepo.Role != "admin"))
-        //    {
-        //        userParams.Name = null;
-        //    }
-
-        //    // Prevent normal user search by verification
-        //    if (userParams.Verification != null && userFromRepo.Role != "admin")
-        //    {
-        //        userParams.Verification = null;
-        //    }
-
-        //    // Prevent normal user search by status
-        //    if ((!string.IsNullOrEmpty(userParams.Status) && userFromRepo.Role != "admin"))
-        //    {
-        //        userParams.Status = null;
-        //    }
-
-        //    if (string.IsNullOrEmpty(userParams.Gender))
-        //    {
-        //        userParams.Gender = userFromRepo.Gender == "male" ? "female" : "male";
-        //    }
-
-        //    var users = await _repo.GetUsers(userParams);
-
-        //    var usersToReturn = _mapper.Map<IEnumerable<UserForDetailedDto>>(users);
-
-        //    Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
-
-        //    return Ok(usersToReturn);
-        //}
-
         // GET: Get users (paginated)
         [HttpGet("users")]
         public async Task<IActionResult> GetPagination([FromQuery] UserParams userParams)
