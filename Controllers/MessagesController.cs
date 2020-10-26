@@ -20,11 +20,11 @@ namespace DatingApp.API.Controllers
     {
         private readonly IMessageService _messageService;
 
-        private readonly IHubContext<MessagesHub> _messagesHub;
+        private readonly IHubContext<MessagesHub, IMessageClient> _messagesHub;
 
         private readonly IMapper _mapper;
 
-        public MessagesController(IMessageService messageService, IHubContext<MessagesHub> messagesHub, IMapper mapper)
+        public MessagesController(IMessageService messageService, IHubContext<MessagesHub, IMessageClient> messagesHub, IMapper mapper)
         {
             _messageService = messageService;
             _messagesHub = messagesHub;
@@ -94,9 +94,7 @@ namespace DatingApp.API.Controllers
 
             var message = await _messageService.Create(userId, model);
 
-            //await _messagesHub.Clients.All.ReceiveMessage(message);
-
-            await _messagesHub.Clients.All.SendAsync("ReceiveMessage", message);
+            await _messagesHub.Clients.All.ReceiveMessage(message);
 
             return CreatedAtRoute("GetMessageById", new { userId, id = message.Id }, message);
         }

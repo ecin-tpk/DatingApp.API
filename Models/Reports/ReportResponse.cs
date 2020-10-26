@@ -1,8 +1,7 @@
 ﻿using System;
-
 namespace DatingApp.API.Models.Reports
 {
-    public class NewReportRequest
+    public class ReportResponse
     {
         public int SenderId { get; set; }
 
@@ -10,11 +9,11 @@ namespace DatingApp.API.Models.Reports
 
         public string ReportedFor { get; set; }
 
-        //public DateTime ReportSent { get; set; }
+        public DateTime ReportSent { get; set; }
 
-        //public NewReportRequest()
-        //{
-        //    ReportSent = DateTime.Now;
-        //}
+        public ReportResponse()
+        {
+            ReportSent = DateTime.Now;
+        }
     }
 }

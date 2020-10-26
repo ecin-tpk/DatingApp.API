@@ -46,8 +46,8 @@ namespace DatingApp.API.Controllers
         }
 
         // POST: Login with facebook
-        [HttpPost("login/facebook")]
-        public async Task<IActionResult> FacebookLoginAsync([FromBody] FacebookLoginRequest model)
+        [HttpPost("facebook-login")]
+        public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginRequest model)
         {
             var dd = new DeviceDetector(Request.Headers["User-Agent"]);
 
@@ -145,6 +145,7 @@ namespace DatingApp.API.Controllers
             return Ok(new { message = "Token is valid" });
         }
 
+        // Helpers
         // Get IP address
         private string IpAddress()
         {

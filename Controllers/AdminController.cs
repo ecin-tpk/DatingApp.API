@@ -17,17 +17,13 @@ namespace DatingApp.API.Controllers
     public class AdminController: BaseController
     {
         private readonly IMapper _mapper;
-
         private readonly IAccountService _accountService;
-
         private readonly IUserService _userService;
 
         public AdminController(IMapper mapper, IAccountService accountService, IUserService userService)
         {
             _mapper = mapper;
-
             _accountService = accountService;
-
             _userService = userService;
         }
 
@@ -90,6 +86,7 @@ namespace DatingApp.API.Controllers
             return Ok(newUsersPerMonth);
         }
 
+        // Helpers
         // Get IP address
         private string IpAddress()
         {

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using DatingApp.API.Dtos;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
 using DatingApp.API.Models;

@@ -37,6 +37,7 @@ namespace DatingApp.API
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IFacebookService, FacebookService>();
             services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IReportService, ReportService>();
             services.AddSignalR();
         }
 
@@ -55,6 +56,7 @@ namespace DatingApp.API
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<MessagesHub>("/hubs/messages");
+                endpoints.MapHub<ReportsHub>("/hubs/reports");
             });
         }
     }
