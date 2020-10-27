@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using DatingApp.API.Helpers;
 using DatingApp.API.Models.Account;
 using Newtonsoft.Json;
 
@@ -15,35 +16,35 @@ namespace DatingApp.API.Services
         {
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri("https://graph.facebook.com/v2.8/")
+                BaseAddress = new Uri("https://graph.facebook.com/v8.0/")
             };
-            _httpClient.DefaultRequestHeaders
-                .Accept
-                .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<FacebookLoginResponse> GetUser(string facebookToken)
+        public async Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model)
         {
-            var result = await GetAsync<dynamic>(facebookToken, "me", "fields=first_name,last_name,email,picture.width(500).height(500)");
+            var result = await GetAsync<dynamic>(model.facebookToken, model.facebookUserId, "fields=name,email,birthday,location,gender,picture.width(500)");
             if (result == null)
             {
-                throw new Exception("User from this token not exist");
+                throw new AppException("Failed to load Facebook user");
             }
 
             var account = new FacebookLoginResponse()
             {
                 Email = result.email,
-                FirstName = result.first_name,
-                LastName = result.last_name,
-                Picture = result.picture.data.url
+                Name = result.name,
+                Picture = result.picture.data.url,
+                Gender = result.gender,
+                DateOfBirth = result.birthday,
+                City = result.location.name
             };
 
             return account;
         }
 
-        private async Task<T> GetAsync<T>(string accessToken, string endpoint, string args = null)
+        private async Task<T> GetAsync<T>(string accessToken, string facebookUserId, string args = null)
         {
-            var response = await _httpClient.GetAsync($"{endpoint}?access_token={accessToken}&{args}");
+            var response = await _httpClient.GetAsync($"{facebookUserId}?{args}&access_token={accessToken}");
             if (!response.IsSuccessStatusCode)
                 return default(T);
 

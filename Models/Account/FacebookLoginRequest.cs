@@ -6,7 +6,9 @@ namespace DatingApp.API.Models.Account
     public class FacebookLoginRequest
     {
         [Required]
-        [StringLength(255)]
+        public string facebookUserId { get; set; }
+
+        [Required]
         public string facebookToken { get; set; }
     }
 }

@@ -109,7 +109,7 @@ namespace DatingApp.API.Services
                 throw new AppException("Invalid token");
             }
 
-            var facebookUser = await _facebookService.GetUser(model.facebookToken);
+            var facebookUser = await _facebookService.GetUser(model);
 
             var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == facebookUser.Email);
 
@@ -117,7 +117,7 @@ namespace DatingApp.API.Services
             if (user == null)
             {
                 var userToCreate = _mapper.Map<User>(facebookUser);
-                userToCreate.Name = $"{facebookUser.FirstName} {facebookUser.LastName}";
+                userToCreate.Name = $"{facebookUser.Name}";
                 userToCreate.Created = DateTime.Now;
                 userToCreate.Role = Role.User;
                 userToCreate.Status = Status.Active;
