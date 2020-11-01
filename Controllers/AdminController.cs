@@ -53,7 +53,7 @@ namespace DatingApp.API.Controllers
 
             Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
-            return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
+            return Ok(_mapper.Map<IEnumerable<UserForAdminResponse>>(users));
         }
 
         // GET: Create user

@@ -38,6 +38,7 @@ namespace DatingApp.API
             services.AddScoped<IFacebookService, FacebookService>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<ILikeService, LikeService>();
             services.AddSignalR();
         }
 

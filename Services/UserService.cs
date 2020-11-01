@@ -132,7 +132,7 @@ namespace DatingApp.API.Services
         // Get full information of a user by id
         public async Task<User> GetUser(int id)
         {
-            var user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.Id == id);
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found");

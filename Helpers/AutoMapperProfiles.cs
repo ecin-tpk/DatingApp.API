@@ -13,9 +13,12 @@ namespace DatingApp.API.Helpers
     {
         public AutoMapperProfiles()
         {
-            CreateMap<User, UserResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
             CreateMap<NewUserRequest, User>();
+            CreateMap<User, UserResponse>()
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.HideAge ? null : src.DateOfBirth));
+            CreateMap<User, UserForAdminResponse>()
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
             CreateMap<UpdateRequest, User>()
                 .ForAllMembers(x => x.Condition((src, dest, prop) =>
                 {

@@ -37,6 +37,8 @@ namespace DatingApp.API.Entities
 
         public DateTime? DateOfBirth { get; set; }
 
+        public bool HideAge { get; set; }
+
         public DateTime LastActive { get; set; }
 
         public string Introduction { get; set; }

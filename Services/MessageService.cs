@@ -15,14 +15,14 @@ namespace DatingApp.API.Services
     public class MessageService : IMessageService
     {
         private readonly IUserService _userService;
-
+        private readonly ILikeService _likeService;
         private readonly IMapper _mapper;
-
         private readonly DataContext _context;
 
-        public MessageService(IUserService userService, IMapper mapper, DataContext context)
+        public MessageService(IUserService userService, ILikeService likeService, IMapper mapper, DataContext context)
         {
             _userService = userService;
+            _likeService = likeService;
             _mapper = mapper;
             _context = context;
         }
@@ -36,6 +36,13 @@ namespace DatingApp.API.Services
         // Create new message
         public async Task<MessageResponse> Create(int userId, NewMessageRequest model)
         {
+            // Check if they are matched or not
+            var areMatched = _likeService.AreMatched(model.SenderId, model.RecipientId);
+            if (areMatched.Result == false)
+            {
+                throw new AppException("Can not send message to an unmatch user");
+            }
+
             model.SenderId = userId;
 
             var recipient = await _userService.GetUser(model.RecipientId);
