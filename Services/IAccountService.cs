@@ -13,7 +13,7 @@ namespace DatingApp.API.Services
 
         Task<LoginResponse> Login(LoginRequest model, string ipAddress, DeviceDetector deviceDetector);
 
-        Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector);
+        Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin);
 
         Task ForgotPassword(ForgotPasswordRequest model, string origin);
 

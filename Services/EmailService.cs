@@ -66,7 +66,7 @@ namespace DatingApp.API.Services
                 message = $@"<p>If you don't know your password you can reset it via the <code>/account/forgot-password</code> api route</p>";
             }
 
-            Send(recipientEmail: email, subject: "Dating App registration - Email already registered.", htmlBody: $@"<h4>Email already Registered</h4><p>Your email <strong>{email}</strong> is already register.</p>{message}");
+            Send(recipientEmail: email, subject: "Dating App registration - Email already registered.", htmlBody: $@"<h4>Email already Registered</h4><p>Your email <strong>{email}</strong> is already registered.</p>{message}");
         }
 
         // Send forgot password email that contains a token

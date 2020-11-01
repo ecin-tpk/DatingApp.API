@@ -44,6 +44,7 @@ namespace DatingApp.API.Helpers
             CreateMap<RegisterRequest, User>();
             CreateMap<User, LoginResponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
+            CreateMap<FacebookLoginResponse, User>();
 
             CreateMap<UploadRequest, Photo>();
             CreateMap<Photo, PhotoResponse>();

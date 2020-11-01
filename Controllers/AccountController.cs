@@ -51,11 +51,12 @@ namespace DatingApp.API.Controllers
         {
             var dd = new DeviceDetector(Request.Headers["User-Agent"]);
 
-            var response = await _accountService.FacebookLogin(model, IpAddress(), dd);
+            var response = await _accountService.FacebookLogin(model, IpAddress(), dd, Request.Headers["origin"]);
 
             Response.SetTokenCookie(response.RefreshToken);
 
             return Ok(response);
+
         }
 
         // POST: Verify email

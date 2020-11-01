@@ -15,13 +15,9 @@ namespace DatingApp.API.Services
     public class PhotoService : IPhotoService
     {
         private readonly DataContext _context;
-
         private readonly IMapper _mapper;
-
         private readonly IUserService _userService;
-
         private readonly IOptions<CloudinarySettings> _cloudinarySettings;
-
         private Cloudinary _cloudinary;
 
         public PhotoService(DataContext context, IMapper mapper, IUserService userService, IOptions<CloudinarySettings> cloudinarySettings)

@@ -45,7 +45,7 @@ namespace DatingApp.API.Services
         // Register
         public async Task Register(RegisterRequest model, string origin)
         {
-            model.Email = model.Email.ToLower();        
+            model.Email = model.Email.ToLower();
 
             // Send already registered error in email
             if (await _context.Users.AnyAsync(u => u.Email == model.Email))
@@ -86,7 +86,7 @@ namespace DatingApp.API.Services
             {
                 throw new AppException("Email or password is incorrect");
             }
-            if(user.Status == Status.Disabled || user.Status == Status.Deleted)
+            if (user.Status == Status.Disabled || user.Status == Status.Deleted)
             {
                 throw new AppException($"Account {user.Status}");
             }
@@ -109,22 +109,16 @@ namespace DatingApp.API.Services
         }
 
         // Login with facebook
-        public async Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector)
+        public async Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin)
         {
-            if (string.IsNullOrEmpty(model.facebookToken))
-            {
-                throw new AppException("Invalid token");
-            }
+            var facebookUser = await _facebookService.GetUser(model, origin);
 
-            var facebookUser = await _facebookService.GetUser(model);
-
-            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == facebookUser.Email);
+            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.Email == facebookUser.Email);
 
             // Create new user in db to store needed info
             if (user == null)
             {
                 var userToCreate = _mapper.Map<User>(facebookUser);
-                userToCreate.Name = $"{facebookUser.Name}";
                 userToCreate.Created = DateTime.Now;
                 userToCreate.Role = Role.User;
                 userToCreate.Status = Status.Active;
@@ -135,7 +129,7 @@ namespace DatingApp.API.Services
                 // Add photo url after save to db to have user id
                 if (await _context.SaveChangesAsync() > 0)
                 {
-                    var createdUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == facebookUser.Email);
+                    var createdUser = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.Email == facebookUser.Email);
 
                     var photo = new Photo
                     {

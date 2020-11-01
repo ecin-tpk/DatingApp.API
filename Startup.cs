@@ -31,14 +31,16 @@ namespace DatingApp.API
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            services.AddScoped<IFacebookService, FacebookService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPhotoService, PhotoService>();
-            services.AddScoped<IFacebookService, FacebookService>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<ILikeService, LikeService>();
+
             services.AddSignalR();
         }
 

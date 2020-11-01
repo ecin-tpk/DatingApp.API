@@ -1,5 +1,22 @@
 ﻿[
   {
+    "Name": "Khuong Tran",
+    "Email": "admin@datingapp.com",
+    "Password": "password",
+    "Gender": "male",
+    "DateOfBirth": "1999-02-26",
+    "Created": "2020-09-21",
+    "LastActive": "2020-09-21",
+    "Introduction": "",
+    "LookingFor": "",
+    "Interests": "",
+    "City": "Thành phố Hồ Chí Minh",
+    "Country": "Việt Nam",
+    "Photos": [],
+    "Role": "Admin",
+    "Status": "Active"
+  },
+  {
     "Name": "Darlene Newton",
     "Email": "abbymitchell@opticon.com",
     "Password": "password",
