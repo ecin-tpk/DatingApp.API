@@ -45,6 +45,8 @@ namespace DatingApp.API.Services
         // Register
         public async Task Register(RegisterRequest model, string origin)
         {
+            model.Email = model.Email.ToLower();        
+
             // Send already registered error in email
             if (await _context.Users.AnyAsync(u => u.Email == model.Email))
             {
@@ -73,8 +75,9 @@ namespace DatingApp.API.Services
         // Login
         public async Task<LoginResponse> Login(LoginRequest model, string ipAddress, DeviceDetector deviceDetector)
         {
+            model.Email = model.Email.ToLower();
+
             var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == model.Email);
-            //var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
             if (user.Role != Role.Admin && model.Role == Role.Admin)
             {
                 throw new AppException("Not eligible");
@@ -82,6 +85,10 @@ namespace DatingApp.API.Services
             if (user == null || !user.IsVerified || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
             {
                 throw new AppException("Email or password is incorrect");
+            }
+            if(user.Status == Status.Disabled || user.Status == Status.Deleted)
+            {
+                throw new AppException($"Account {user.Status}");
             }
 
             var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);

@@ -32,7 +32,7 @@ namespace DatingApp.API.Models.Users
         public string Status { get; set; }
 
         [EmailAddress]
-        public string Email { get => _email; set => _email = ReplaceEmptyWithNull(value); }
+        public string Email { get => _email != null ? _email.ToLower(): _email; set => _email = ReplaceEmptyWithNull(value.ToLower()); }
 
         [EnumDataType(typeof(Role))]
         public string Role { get => _role; set => _role = ReplaceEmptyWithNull(value); }
