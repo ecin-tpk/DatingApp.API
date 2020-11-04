@@ -17,6 +17,8 @@ namespace DatingApp.API.Helpers
 
         public DbSet<Message> Messages { get; set; }
 
+        public DbSet<Report> Reports { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<Like>().HasKey(k => new { k.LikerId, k.LikeeId });

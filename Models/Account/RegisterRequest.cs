@@ -1,20 +1,22 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using DatingApp.API.Helpers;
 
 namespace DatingApp.API.Models.Account
 {
     public class RegisterRequest
     {
         [Required]
+        [EmailAddress]
         public string Email { get; set; }
-
-        [Required]
-        [Compare("Email")]
-        public string ConfirmEmail { get; set; }
 
         [Required]
         [MinLength(6)]
         public string Password { get; set; }
+
+        [Required]
+        [Compare("Password")]
+        public string ConfirmPassword { get; set; }
 
         [Required]
         [MaxLength(30)]
@@ -24,6 +26,7 @@ namespace DatingApp.API.Models.Account
         public string Gender { get; set; }
 
         [Required]
+        [ValidDateOfBirth(ErrorMessage ="You must be 18 years old or over to register")]
         public DateTime DateOfBirth { get; set; }
 
         [Required]

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace DatingApp.API.Services
 {
-    public class FacebookService: IFacebookService
+    public class FacebookService : IFacebookService
     {
         private readonly HttpClient _httpClient;
         private readonly DataContext _context;
@@ -34,14 +34,19 @@ namespace DatingApp.API.Services
                 throw new AppException("Invalid credentials");
             }
 
+            var email = (string)result.email;
+
+            var existingUserWithSameEmail = await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
+
             var account = new FacebookLoginResponse()
             {
-                Email = result.email,
+                Email = existingUserWithSameEmail == null ? result.email : null,
                 Name = result.name,
-                Picture = result.picture.data.url,
                 Gender = result.gender,
                 DateOfBirth = result.birthday,
-                City = result.location.name
+                City = result.location.name,
+                FacebookUID = model.facebookUserId,
+                Picture = result.picture.data.url
             };
 
             return account;

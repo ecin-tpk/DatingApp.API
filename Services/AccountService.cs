@@ -113,7 +113,7 @@ namespace DatingApp.API.Services
         {
             var facebookUser = await _facebookService.GetUser(model, origin);
 
-            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.Email == facebookUser.Email);
+            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
 
             // Create new user in db to store needed info
             if (user == null)
@@ -126,10 +126,10 @@ namespace DatingApp.API.Services
 
                 _context.Users.Add(userToCreate);
 
-                // Add photo url after save to db to have user id
+                // Add photo url after saving to db to have user id
                 if (await _context.SaveChangesAsync() > 0)
                 {
-                    var createdUser = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.Email == facebookUser.Email);
+                    var createdUser = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
 
                     var photo = new Photo
                     {
@@ -143,7 +143,7 @@ namespace DatingApp.API.Services
                     await _context.SaveChangesAsync();
                 }
 
-                user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == facebookUser.Email);
+                user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.FacebookUID == facebookUser.FacebookUID);
             }
 
             var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);

@@ -56,7 +56,6 @@ namespace DatingApp.API.Controllers
             Response.SetTokenCookie(response.RefreshToken);
 
             return Ok(response);
-
         }
 
         // POST: Verify email

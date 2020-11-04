@@ -59,6 +59,8 @@ namespace DatingApp.API.Entities
 
         public string Country { get; set; }
 
+        public string FacebookUID { get; set; }
+
         public Role Role { get; set; }
 
         public Status Status { get; set; }
