@@ -35,5 +35,6 @@
     <None Remove="DatingApp.db-shm" />
     <None Remove="DatingApp.db-wal" />
     <None Remove="DatingApp.db-wal" />
+    <None Remove="DatingApp.db-wal" />
   </ItemGroup>
 </Project>

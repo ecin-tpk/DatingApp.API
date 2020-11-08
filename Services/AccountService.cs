@@ -27,7 +27,7 @@ namespace DatingApp.API.Services
         Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin);
         Task ForgotPassword(ForgotPasswordRequest model, string origin);
         Task ResetPassword(ResetPasswordRequest model);
-        Task<UserResponse> UpdatePassword(int id, UpdatePasswordRequest model);
+        Task UpdatePassword(int id, UpdatePasswordRequest model);
         Task<LoginResponse> RefreshToken(string token, string ipAddress, DeviceDetector deviceDetector);
         Task ValidateResetToken(ValidateResetTokenRequest model);
         Task RevokeToken(string token, string ipAddress);
@@ -37,15 +37,10 @@ namespace DatingApp.API.Services
     public class AccountService : IAccountService
     {
         private readonly DataContext _context;
-
         private readonly IMapper _mapper;
-
         private readonly AppSettings _appSettings;
-
         private readonly IEmailService _emailService;
-
         private readonly IUserService _userService;
-
         private readonly IFacebookService _facebookService;
 
         public AccountService(DataContext context, IMapper mapper, IOptions<AppSettings> appSettings, IEmailService emailService, IUserService userService, IFacebookService facebookService)
@@ -241,13 +236,9 @@ namespace DatingApp.API.Services
         }
 
         // Update password
-        public async Task<UserResponse> UpdatePassword(int id, UpdatePasswordRequest model)
+        public async Task UpdatePassword(int id, UpdatePasswordRequest model)
         {
             var userInDb = await _context.Users.SingleOrDefaultAsync(u => u.Id == id);
-            if (userInDb == null)
-            {
-                throw new KeyNotFoundException("User not found");
-            }
             if (!VerifyPasswordHash(model.CurrentPassword, userInDb.PasswordHash, userInDb.PasswordSalt))
             {
                 throw new AppException("Wrong password");
@@ -264,12 +255,7 @@ namespace DatingApp.API.Services
 
             _context.Users.Update(userInDb);
 
-            if (await _context.SaveChangesAsync() > 0)
-            {
-                return _mapper.Map<UserResponse>(userInDb);
-            }
-
-            throw new AppException("Update password failed");
+            await _context.SaveChangesAsync();
         }
 
         // Hash password

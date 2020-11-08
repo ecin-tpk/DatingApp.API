@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatingApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20201106141648_InitialCreate")]
+    [Migration("20201108061453_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -135,9 +135,6 @@ namespace DatingApp.API.Migrations
                     b.Property<string>("Bio")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("BodyType")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Children")
                         .HasColumnType("TEXT");
 
@@ -154,6 +151,9 @@ namespace DatingApp.API.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Ethnicity")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EyeColor")
@@ -205,6 +205,9 @@ namespace DatingApp.API.Migrations
                         .HasColumnType("BLOB");
 
                     b.Property<string>("Phone")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Religion")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ResetToken")

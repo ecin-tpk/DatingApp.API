@@ -17,8 +17,9 @@ namespace DatingApp.API.Services
     {
         Task<Message> GetById(int id);
         Task<MessageResponse> Create(int userId, NewMessageRequest model);
+        Task Delete(int id, int userId);
+        Task MarkAsRead(int id, int userId);
         Task<PagedList<Message>> GetMessageForUser();
-        Task<IEnumerable<MessageResponse>> GetMessageThread(int userId, int recipientId);
         Task<PagedList<Message>> GetPagination(MessageThreadParams msgThreadparams);
     }
     #endregion
@@ -47,13 +48,13 @@ namespace DatingApp.API.Services
         // Create new message
         public async Task<MessageResponse> Create(int userId, NewMessageRequest model)
         {
+            // Must find sender for automapping
             var user = await _userService.GetUser(userId);
 
             model.SenderId = user.Id;
 
             // Check if they are matched or not
-            var areMatched = await _likeService.AreMatched(model.SenderId, model.RecipientId);
-            if (areMatched == false)
+            if (await _likeService.AreMatched(model.SenderId, model.RecipientId) == false)
             {
                 throw new AppException("Can not send message to an unmatch user");
             }
@@ -75,32 +76,65 @@ namespace DatingApp.API.Services
             throw new AppException("Send messaged failed");
         }
 
+        // Delete message
+        public async Task Delete(int id, int userId)
+        {
+            var messageInDb = await _context.Messages.SingleOrDefaultAsync(m => m.Id == id);
+            if (messageInDb.SenderId == userId)
+            {
+                messageInDb.SenderDeleted = true;
+            }
+            if (messageInDb.RecipientId == userId)
+            {
+                messageInDb.RecipientDeleted = true;
+            }
+
+            // If both sender and recipient deleted the message, then go and delete the message in database as well
+            if (messageInDb.SenderDeleted && messageInDb.RecipientDeleted)
+            {
+                _context.Remove(messageInDb);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Mark message as read
+        public async Task MarkAsRead(int id, int userId)
+        {
+            var message = await _context.Messages.SingleOrDefaultAsync(m => m.Id == id);
+            if (message.RecipientId != userId)
+            {
+                throw new AppException("Unauthorized");
+            }
+            message.IsRead = true;
+            message.DateRead = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+        }
+
         public Task<PagedList<Message>> GetMessageForUser()
         {
             throw new NotImplementedException();
         }
 
-        // Get message thread
-        public async Task<IEnumerable<MessageResponse>> GetMessageThread(int userId, int recipientId)
-        {
-            var messages = await _context.Messages
-                .Include(u => u.Sender).ThenInclude(p => p.Photos)
-                .Include(u => u.Recipient).ThenInclude(p => p.Photos)
-                .Where(m => m.RecipientId == userId && m.RecipientDeleted == false && m.SenderId == recipientId
-                || m.RecipientId == recipientId && m.SenderDeleted == false && m.SenderId == userId)
-                .OrderByDescending(m => m.MessageSent).ToListAsync();
-
-            return _mapper.Map<IEnumerable<MessageResponse>>(messages);
-        }
-
+        // Get messages of a thread (paginated)
         public async Task<PagedList<Message>> GetPagination(MessageThreadParams msgThreadparams)
         {
             var messages = _context.Messages
                 .Include(u => u.Sender).ThenInclude(p => p.Photos)
                 .Include(u => u.Recipient).ThenInclude(p => p.Photos)
-                .Where(m => m.RecipientId == msgThreadparams.UserId && m.RecipientDeleted == false && m.SenderId == msgThreadparams.RecipientId
-                || m.RecipientId == msgThreadparams.RecipientId && m.SenderDeleted == false && m.SenderId == msgThreadparams.UserId).AsQueryable()
-                .OrderBy(m => m.MessageSent);
+                .Where(m =>
+                    (
+                        m.RecipientId == msgThreadparams.UserId &&
+                        m.RecipientDeleted == false &&
+                        m.SenderId == msgThreadparams.RecipientId
+                    ) ||
+                    (
+                        m.RecipientId == msgThreadparams.RecipientId &&
+                        m.SenderDeleted == false &&
+                        m.SenderId == msgThreadparams.UserId
+                    )
+                ).AsQueryable().OrderBy(m => m.MessageSent);
 
             return await PagedList<Message>.CreateAsync(messages, msgThreadparams.PageNumber, msgThreadparams.PageSize);
         }

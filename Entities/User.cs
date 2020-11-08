@@ -21,13 +21,10 @@ namespace DatingApp.API.Entities
         public Status Status { get; set; }
         public DateTime Created { get; set; }
         public DateTime? Updated { get; set; }
-
+            
         public string Name { get; set; }
         public string Gender { get; set; }
-        public byte Height { get; set; }
-        public byte Weight { get; set; }    
         public string Interests { get; set; }
-        public string SexualOrientation { get; set; }
         public string LookingFor { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public DateTime LastActive { get; set; }
@@ -36,13 +33,19 @@ namespace DatingApp.API.Entities
         public string JobTitle { get; set; }
         public string School { get; set; }
         public string Company { get; set; }
-        public string BodyType { get; set; }
+        // More details
+        public string Ethnicity { get; set; }
+        public string Religion { get; set; }
+        public byte Height { get; set; }
+        public byte Weight { get; set; }
+        public string SexualOrientation { get; set; }
         public string HairColor { get; set; }
         public string EyeColor { get; set; }
         public string LiveWith { get; set; }
         public string Children { get; set; }
         public string Smoking { get; set; }
         public string Drinking { get; set; }
+
         public bool HideAge { get; set; }
 
         public List<RefreshToken> RefreshTokens { get; set; }

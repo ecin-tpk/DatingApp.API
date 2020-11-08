@@ -4,9 +4,7 @@ namespace DatingApp.API.Helpers
     public class MessageParams
     {
         private const int MaxPageSize = 50;
-
         private int pageSize = 10;
-
         public int PageNumber { get; set; } = 1;
 
         public int PageSize
@@ -19,7 +17,6 @@ namespace DatingApp.API.Helpers
         }
 
         public int UserId { get; set; }
-
         public string MessageContainer { get; set; } = "Unread";
     }
 }

@@ -16,6 +16,8 @@ namespace DatingApp.API.Helpers
             CreateMap<NewUserRequest, User>();
             CreateMap<User, UserResponse>()
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.HideAge ? null : src.DateOfBirth));
+            CreateMap<User, UserDetailsResponse>()
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.HideAge ? null : src.DateOfBirth));
             CreateMap<User, UserForAdminResponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
             CreateMap<UpdateRequest, User>()
@@ -39,6 +41,7 @@ namespace DatingApp.API.Helpers
 
                     return true;
                 }));
+            CreateMap<User, UpdateResponse>();
 
             CreateMap<RegisterRequest, User>();
             CreateMap<User, LoginResponse>()

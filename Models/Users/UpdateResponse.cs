@@ -1,30 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using DatingApp.API.Models.Photos;
-
-namespace DatingApp.API.Models.Account
+namespace DatingApp.API.Models.Users
 {
-    public class LoginResponse
+    public class UpdateResponse
     {
-        public int Id { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
-        public bool IsVerified { get; set; }
         public string Role { get; set; }
         public string Status { get; set; }
-        public string JwtToken { get; set; }
 
         public string Name { get; set; }
         public string Gender { get; set; }
         public string Interests { get; set; }
         public string LookingFor { get; set; }
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public string Location { get; set; }
         public string Bio { get; set; }
         public string JobTitle { get; set; }
         public string School { get; set; }
         public string Company { get; set; }
+
         public string Ethnicity { get; set; }
         public string Religion { get; set; }
         public byte Height { get; set; }
@@ -36,12 +30,7 @@ namespace DatingApp.API.Models.Account
         public string Children { get; set; }
         public string Smoking { get; set; }
         public string Drinking { get; set; }
-        public bool HideAge { get; set; }
-        public string PhotoUrl { get; set; }
-        public ICollection<PhotoResponse> Photos { get; set; }
 
-        // Refresh token is returned in http only cookie
-        [JsonIgnore]
-        public string RefreshToken { get; set; }
+        public bool HideAge { get; set; }
     }
 }

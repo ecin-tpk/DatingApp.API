@@ -99,63 +99,32 @@ namespace DatingApp.API.Controllers
             return CreatedAtRoute("GetMessageById", new { userId, id = message.Id }, message);
         }
 
-        //// POST (Remove Message From Sender Or Recipient)
-        //[HttpPost("{id}")]
-        //public async Task<IActionResult> DeleteMessage(int id, int userId)
-        //{
-        //    if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //    {
-        //        return Unauthorized();
-        //    }
+        // POST (Remove Message From Sender Or Recipient)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> DeleteMessage(int id, int userId)
+        {
+            if (userId != User.Id)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-        //    var messageFromRepo = await _repo.GetMessage(id);
+            await _messageService.Delete(id, userId);
 
-        //    if(messageFromRepo.SenderId == userId)
-        //    {
-        //        messageFromRepo.SenderDeleted = true;
-        //    }
+            return Ok("Message successfully deleted");
+        }
 
-        //    if (messageFromRepo.RecipientId == userId)
-        //    {
-        //        messageFromRepo.RecipientDeleted = true;
-        //    }
+        // POST (Mark Message As Read)
+        [HttpPost("{id}/read")]
+        public async Task<IActionResult> MarkMessageAsRead(int userId, int id)
+        {
+            if (userId != User.Id)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-        //    // If both sender and recipient deleted the message, then go and delete the message in database as well
-        //    if(messageFromRepo.SenderDeleted && messageFromRepo.RecipientDeleted)
-        //    {
-        //        _repo.Delete(messageFromRepo);
-        //    }
+            await _messageService.MarkAsRead(id, userId);
 
-        //    if(await _repo.SaveAll())
-        //    {
-        //        return NoContent();
-        //    }
-
-        //    throw new Exception("Error deleting the message");
-        //}
-
-        //// POST (Mark Message As Read)
-        //[HttpPost("{id}/read")]
-        //public async Task<IActionResult> MarkMessageAsRead(int userId, int id)
-        //{
-        //    if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    var message = await _repo.GetMessage(id);
-
-        //    if(message.RecipientId != userId)
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    message.IsRead = true;
-        //    message.DateRead = DateTime.Now;
-
-        //    await _repo.SaveAll();
-
-        //    return NoContent();
-        //}
+            return Ok("Message marked as read");
+        }
     }
 }

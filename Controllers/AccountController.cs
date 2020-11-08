@@ -69,7 +69,7 @@ namespace DatingApp.API.Controllers
 
         // POST: Forgot password
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPasswordAsync(ForgotPasswordRequest model)
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
         {
             await _accountService.ForgotPassword(model, Request.Headers["orgin"]);
 
@@ -78,7 +78,7 @@ namespace DatingApp.API.Controllers
 
         // POST: Reset password (when user forgot their password they send email to /account/forgot-password then we send an email that contains a token to verify
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPasswordAsync(ResetPasswordRequest model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
         {
             await _accountService.ResetPassword(model);
 
@@ -86,18 +86,19 @@ namespace DatingApp.API.Controllers
         }
 
         // PUT: Update password
+        [Authorize]
         [HttpPut("{id:int}/update-password")]
         public async Task<IActionResult> UpdatePassword(int id, UpdatePasswordRequest model)
         {
             // Users can update their own password and admins can update any user's password
             if (id != User.Id && User.Role != Role.Admin)
-            {
+            {   
                 return Unauthorized(new { message = "Unauthorized" });
             }
 
-            var user = await _accountService.UpdatePassword(id, model);
+            await _accountService.UpdatePassword(id, model);
 
-            return Ok(user);
+            return Ok("Password updated successfully");
         }
 
         // POST: Use refresh token to get a new jwt token
@@ -120,12 +121,14 @@ namespace DatingApp.API.Controllers
         [HttpPost("revoke-token")]
         public async Task<IActionResult> RevokeToken(RevokeTokenRequest model)
         {
+            // If user didn't send which token to revoke, the current token in cookie would be revoked
             var token = model.Token ?? Request.Cookies["refreshToken"];
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(token.Trim()))
             {
-                return BadRequest(new { message = "Token is required" });
+                return BadRequest(new { message = "Invalid token" });
             }
 
+            // Admin can revoke any token while users can only revoke their ones
             if (!User.OwnsToken(token) && User.Role != Role.Admin)
             {
                 return Unauthorized(new { message = "Unauthorized" });

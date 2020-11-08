@@ -43,13 +43,8 @@ namespace DatingApp.API.Controllers
 
         // GET: Get a specific user by id
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<UserResponse>> GetById(int id)
+        public async Task<ActionResult<UserDetailsResponse>> GetById(int id)
         {
-            if(id!= User.Id && User.Role != Role.Admin)
-            {
-                return Unauthorized(new { message = "Unauthorized" });
-            }
-
             var user = await _userService.GetById(id);
 
             return Ok(user);
@@ -75,42 +70,5 @@ namespace DatingApp.API.Controllers
 
             return Ok(userToReturn);
         }
-
-        //// POST: Like a user
-        //[HttpPost("{id}/like/{recipientId}")]
-        //public async Task<IActionResult> LikeUser(int id, int recipientId)
-        //{
-        //    if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    var like = await _repo.GetLike(id, recipientId);
-
-        //    if (like != null)
-        //    {
-        //        return BadRequest("You already like this user");
-        //    }
-
-        //    if (await _repo.GetUser(recipientId) == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    like = new Like
-        //    {
-        //        LikerId = id,
-        //        LikeeId = recipientId
-        //    };
-
-        //    _repo.Add<Like>(like);
-
-        //    if (await _repo.SaveAll())
-        //    {
-        //        return Ok();
-        //    }
-
-        //    return BadRequest("Failed to like user");
-        //}
     }
 }

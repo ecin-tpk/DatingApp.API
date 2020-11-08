@@ -17,8 +17,8 @@ namespace DatingApp.API.Services
     public interface IUserService
     {
         Task<PagedList<User>> GetPagination(UserParams userParams);
-        Task<UserResponse> GetById(int id);
-        Task<UserResponse> Update(int id, UpdateRequest model);
+        Task<UserDetailsResponse> GetById(int id);
+        Task<UpdateResponse> Update(int id, UpdateRequest model);
         Task<User> GetUser(int id);
         Task<int[]> GetNumberOfUsersByStatus();
         Task<UserResponse> Create(NewUserRequest model);
@@ -110,16 +110,20 @@ namespace DatingApp.API.Services
             return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
         }
 
-        // Get user by Id
-        public async Task<UserResponse> GetById(int id)
+        // Get user by Id for normal user
+        public async Task<UserDetailsResponse> GetById(int id)
         {
             var user = await GetUser(id);
+            if(user.Role == Role.Admin)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
 
-            return _mapper.Map<UserResponse>(user);
+            return _mapper.Map<UserDetailsResponse>(user);
         }
 
         // Update user info
-        public async Task<UserResponse> Update(int id, UpdateRequest model)
+        public async Task<UpdateResponse> Update(int id, UpdateRequest model)
         {
             var userFromRepo = await GetUser(id);
 
@@ -137,7 +141,7 @@ namespace DatingApp.API.Services
 
             if (await _context.SaveChangesAsync() > 0)
             {
-                return _mapper.Map<UserResponse>(userFromRepo);
+                return _mapper.Map<UpdateResponse>(userFromRepo);
             }
 
             throw new AppException("Update failed");

@@ -3,9 +3,7 @@
     public class MessageThreadParams
     {
         private const int MaxPageSize = 20;
-
         private int pageSize = 20;
-
         public int PageNumber { get; set; } = 1;
 
         public int PageSize
@@ -18,7 +16,6 @@
         }
 
         public int UserId { get; set; }
-
         public int RecipientId { get; set; }
     }
 }
