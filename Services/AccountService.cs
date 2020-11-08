@@ -18,6 +18,22 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DatingApp.API.Services
 {
+    #region Interface
+    public interface IAccountService
+    {
+        Task Register(RegisterRequest model, string origin);
+        void VerifyEmail(string token);
+        Task<LoginResponse> Login(LoginRequest model, string ipAddress, DeviceDetector deviceDetector);
+        Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin);
+        Task ForgotPassword(ForgotPasswordRequest model, string origin);
+        Task ResetPassword(ResetPasswordRequest model);
+        Task<UserResponse> UpdatePassword(int id, UpdatePasswordRequest model);
+        Task<LoginResponse> RefreshToken(string token, string ipAddress, DeviceDetector deviceDetector);
+        Task ValidateResetToken(ValidateResetTokenRequest model);
+        Task RevokeToken(string token, string ipAddress);
+    }
+    #endregion
+
     public class AccountService : IAccountService
     {
         private readonly DataContext _context;
@@ -77,35 +93,46 @@ namespace DatingApp.API.Services
         {
             model.Email = model.Email.ToLower();
 
-            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == model.Email);
-            if (user.Role != Role.Admin && model.Role == Role.Admin)
+            try
             {
-                throw new AppException("Not eligible");
+                var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == model.Email);
+                if (user.Role != Role.Admin && model.Role == Role.Admin)
+                {
+                    throw new AppException("Not eligible");
+                }
+                if (!user.IsVerified)
+                {
+                    throw new AppException("Please verify your email before logging in");
+                }
+                if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
+                {
+                    throw new AppException("Email or password is incorrect");
+                }
+                if (user.Status == Status.Disabled || user.Status == Status.Deleted)
+                {
+                    throw new AppException($"Account {user.Status.ToString().ToLower()}");
+                }
+
+                var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);
+
+                user.RefreshTokens.Add(refreshToken);
+
+                _context.Update(user);
+
+                await _context.SaveChangesAsync();
+
+                var jwtToken = GenerateJwtToken(user);
+
+                var response = _mapper.Map<LoginResponse>(user);
+                response.JwtToken = jwtToken;
+                response.RefreshToken = refreshToken.Token;
+
+                return response;
             }
-            if (user == null || !user.IsVerified || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
+            catch
             {
                 throw new AppException("Email or password is incorrect");
             }
-            if (user.Status == Status.Disabled || user.Status == Status.Deleted)
-            {
-                throw new AppException($"Account {user.Status}");
-            }
-
-            var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);
-
-            user.RefreshTokens.Add(refreshToken);
-
-            _context.Update(user);
-
-            await _context.SaveChangesAsync();
-
-            var jwtToken = GenerateJwtToken(user);
-
-            var response = _mapper.Map<LoginResponse>(user);
-            response.JwtToken = jwtToken;
-            response.RefreshToken = refreshToken.Token;
-
-            return response;
         }
 
         // Login with facebook
@@ -282,7 +309,7 @@ namespace DatingApp.API.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddMinutes(15),
+                Expires = DateTime.Now.AddDays(1),
                 SigningCredentials = creds
             };
 
@@ -325,9 +352,6 @@ namespace DatingApp.API.Services
             refreshToken.Device = newRefreshToken.Device;
             refreshToken.Application = newRefreshToken.Application;
             refreshToken.LastActive = newRefreshToken.LastActive;
-            //refreshToken.Revoked = DateTime.Now;
-            //refreshToken.RevokedByIp = ipAddress;
-            //refreshToken.ReplaceByToken = newRefreshToken.Token;
 
             _context.Update(user);
 
@@ -339,6 +363,12 @@ namespace DatingApp.API.Services
             response.JwtToken = jwtToken;
             response.RefreshToken = newRefreshToken.Token;
 
+            //var response = new LoginResponse
+            //{
+            //    JwtToken = jwtToken,
+            //    RefreshToken = newRefreshToken.Token
+            //};
+
             return response;
         }
 
@@ -346,8 +376,6 @@ namespace DatingApp.API.Services
         public async Task RevokeToken(string token, string ipAddress)
         {
             var (refreshToken, user) = await GetRefreshToken(token);
-            //refreshToken.Revoked = DateTime.Now;
-            //refreshToken.RevokedByIp = ipAddress;
             user.RefreshTokens.Remove(refreshToken);
 
             _context.Update(user);
@@ -366,7 +394,7 @@ namespace DatingApp.API.Services
             }
         }
 
-        // 
+        // Get refresh token (if valid)
         private async Task<(RefreshToken, User)> GetRefreshToken(string token)
         {
             var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
@@ -384,7 +412,7 @@ namespace DatingApp.API.Services
 
                 await _context.SaveChangesAsync();
 
-                throw new AppException("Invalid token");
+                throw new AppException("Refresh token expired. Please login again");
             }
 
             return (refreshToken, user);
@@ -422,7 +450,5 @@ namespace DatingApp.API.Services
 
             return refreshToken;
         }
-
-
     }
 }

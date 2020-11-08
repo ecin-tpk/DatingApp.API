@@ -26,13 +26,14 @@ namespace DatingApp.API.Models.Account
         public string Gender { get; set; }
 
         [Required]
+        public string LookingFor { get; set; }
+
+        [Required]
         [ValidDateOfBirth(ErrorMessage ="You must be 18 years old or over to register")]
         public DateTime DateOfBirth { get; set; }
 
         [Required]
-        public string City { get; set; }
-
-        [Required]
-        public string Country { get; set; }
+        [MaxLength(200)]
+        public string Location { get; set; }
     }
 }

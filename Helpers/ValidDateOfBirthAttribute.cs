@@ -11,11 +11,9 @@ namespace DatingApp.API.Helpers
 
             var dateOfBirth = Convert.ToDateTime(value);
 
-            var year = dateOfBirth.Year;
-
             var leapYears = 0;
 
-            for (int i = year; i <= now.Year; i++)
+            for (int i = dateOfBirth.Year; i <= now.Year; i++)
             {
                 if (DateTime.IsLeapYear(i))
                 {

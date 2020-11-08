@@ -8,6 +8,16 @@ using MimeKit.Text;
 
 namespace DatingApp.API.Services
 {
+    #region Interface
+    public interface IEmailService
+    {
+        void Send(string recipientEmail, string subject, string htmlBody, string senderEmail = null);
+        void SendVerificationEmail(User user, string origin);
+        void SendAlreadyRegisteredEmail(string email, string origin);
+        void SendForgotPasswordEmail(User user, string origin);
+    }
+    #endregion
+
     public class EmailService : IEmailService
     {
         private readonly AppSettings _appSettings;

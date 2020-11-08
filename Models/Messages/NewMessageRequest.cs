@@ -13,7 +13,7 @@ namespace DatingApp.API.Models.Messages
 
         public DateTime MessageSent { get; set; }
 
-        public string ReportedFor { get; set; }
+        public string Content { get; set; }
 
         public NewMessageRequest()
         {

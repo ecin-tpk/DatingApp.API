@@ -15,7 +15,6 @@ namespace DatingApp.API.Helpers
         {
             CreateMap<NewUserRequest, User>();
             CreateMap<User, UserResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.HideAge ? null : src.DateOfBirth));
             CreateMap<User, UserForAdminResponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
@@ -51,8 +50,8 @@ namespace DatingApp.API.Helpers
 
             CreateMap<NewMessageRequest, Message>().ReverseMap();
             CreateMap<Message, MessageResponse>()
-                .ForMember(m => m.SenderPhotoUrl, opt => opt.MapFrom(u => u.Sender.Photos.FirstOrDefault(p => p.IsMain).Url))
-                .ForMember(m => m.RecipientPhotoUrl, opt => opt.MapFrom(u => u.Recipient.Photos.FirstOrDefault(p => p.IsMain).Url));
+                .ForMember(dest => dest.SenderPhotoUrl, opt => opt.MapFrom(src => src.Sender.Photos.FirstOrDefault(p => p.IsMain).Url))
+                .ForMember(dest => dest.RecipientPhotoUrl, opt => opt.MapFrom(src => src.Recipient.Photos.SingleOrDefault(p => p.IsMain).Url));
         }
     }
 }

@@ -13,16 +13,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatingApp.API.Services
 {
+    #region Interface
+    public interface IUserService
+    {
+        Task<PagedList<User>> GetPagination(UserParams userParams);
+        Task<UserResponse> GetById(int id);
+        Task<UserResponse> Update(int id, UpdateRequest model);
+        Task<User> GetUser(int id);
+        Task<int[]> GetNumberOfUsersByStatus();
+        Task<UserResponse> Create(NewUserRequest model);
+        Task<int[]> GetNewUsersPerMonth(int year);
+    }
+    #endregion
+
     public class UserService : IUserService
     {
         private readonly DataContext _context;
-
         private readonly IMapper _mapper;
 
         public UserService(DataContext contenxt, IMapper mapper)
         {
             _context = contenxt;
-
             _mapper = mapper;
         }
 
@@ -30,7 +41,10 @@ namespace DatingApp.API.Services
         public async Task<PagedList<User>> GetPagination(UserParams userParams)
         {
             var users = _context.Users.Include(p => p.Photos).AsQueryable();
-            users = users.Where(u => u.Id != userParams.UserId);
+            users = users.Where(
+                u => u.Id != userParams.UserId &&
+                u.Role != Role.Admin
+            );
             users = users.Where(u => u.Status == userParams.Status);
 
             if (!string.IsNullOrEmpty(userParams.Name))
@@ -166,7 +180,7 @@ namespace DatingApp.API.Services
             return newUsersPerMonth;
         }
 
-        // Create new user
+        // Create new user (admin)
         public async Task<UserResponse> Create(NewUserRequest model)
         {
             if (_context.Users.Any(u => u.Email == model.Email))

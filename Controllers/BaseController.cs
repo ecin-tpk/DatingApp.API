@@ -7,6 +7,6 @@ namespace DatingApp.API.Controllers
     public class BaseController: ControllerBase
     {
         // Logged in user is added to HttpContext.Items by JwtMiddleware
-        public User User => (User)HttpContext.Items["User"];
+        public new User User => (User)HttpContext.Items["User"];
     }
 }

@@ -12,6 +12,17 @@ using Microsoft.Extensions.Options;
 
 namespace DatingApp.API.Services
 {
+    #region Interface
+    public interface IPhotoService
+    {
+        Task<Photo> GetById(int id);
+        Task<PhotoResponse> Upload(int userId, UploadRequest model);
+        Task SetMain(int userId, int photoId);
+        Task Delete(int userId, int photoId);
+        Task<Photo> GetMainPhoto(int userId);
+    }
+    #endregion
+
     public class PhotoService : IPhotoService
     {
         private readonly DataContext _context;

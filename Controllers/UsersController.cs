@@ -24,10 +24,15 @@ namespace DatingApp.API.Controllers
         }
 
         // GET: Get users (paginated)
-        [HttpGet("users")]
+        [HttpGet("pagination")]
         public async Task<IActionResult> GetPagination([FromQuery] UserParams userParams)
         {
             userParams.UserId = User.Id;
+            userParams.Name = null;
+            userParams.OrderBy = null;
+            userParams.Status = Status.Active;
+            userParams.Likees = false;
+            userParams.Likers = false;
 
             var users = await _userService.GetPagination(userParams);
 

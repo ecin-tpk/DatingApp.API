@@ -130,13 +130,16 @@ namespace DatingApp.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("City")
+                    b.Property<string>("Bio")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BodyType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Children")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Company")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Country")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Created")
@@ -145,7 +148,13 @@ namespace DatingApp.API.Migrations
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Drinking")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EyeColor")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FacebookUID")
@@ -154,7 +163,10 @@ namespace DatingApp.API.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Height")
+                    b.Property<string>("HairColor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte>("Height")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("HideAge")
@@ -163,13 +175,19 @@ namespace DatingApp.API.Migrations
                     b.Property<string>("Interests")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Introduction")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("JobTitle")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("LastActive")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LiveWith")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LookingFor")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -202,6 +220,9 @@ namespace DatingApp.API.Migrations
                     b.Property<string>("SexualOrientation")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Smoking")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
@@ -213,6 +234,9 @@ namespace DatingApp.API.Migrations
 
                     b.Property<DateTime?>("Verified")
                         .HasColumnType("TEXT");
+
+                    b.Property<byte>("Weight")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

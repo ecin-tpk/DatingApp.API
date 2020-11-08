@@ -9,6 +9,13 @@ using Newtonsoft.Json;
 
 namespace DatingApp.API.Services
 {
+    #region Interface
+    public interface IFacebookService
+    {
+        Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model, string origin);
+    }
+    #endregion
+
     public class FacebookService : IFacebookService
     {
         private readonly HttpClient _httpClient;

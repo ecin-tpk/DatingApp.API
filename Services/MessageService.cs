@@ -12,6 +12,17 @@ using System.Threading.Tasks;
 
 namespace DatingApp.API.Services
 {
+    #region Interface
+    public interface IMessageService
+    {
+        Task<Message> GetById(int id);
+        Task<MessageResponse> Create(int userId, NewMessageRequest model);
+        Task<PagedList<Message>> GetMessageForUser();
+        Task<IEnumerable<MessageResponse>> GetMessageThread(int userId, int recipientId);
+        Task<PagedList<Message>> GetPagination(MessageThreadParams msgThreadparams);
+    }
+    #endregion
+
     public class MessageService : IMessageService
     {
         private readonly IUserService _userService;
@@ -36,17 +47,18 @@ namespace DatingApp.API.Services
         // Create new message
         public async Task<MessageResponse> Create(int userId, NewMessageRequest model)
         {
+            var user = await _userService.GetUser(userId);
+
+            model.SenderId = user.Id;
+
             // Check if they are matched or not
-            var areMatched = _likeService.AreMatched(model.SenderId, model.RecipientId);
-            if (areMatched.Result == false)
+            var areMatched = await _likeService.AreMatched(model.SenderId, model.RecipientId);
+            if (areMatched == false)
             {
                 throw new AppException("Can not send message to an unmatch user");
             }
 
-            model.SenderId = userId;
-
-            var recipient = await _userService.GetUser(model.RecipientId);
-            if (recipient == null)
+            if (await _userService.GetUser(model.RecipientId) == null)
             {
                 throw new AppException("User not found");
             }

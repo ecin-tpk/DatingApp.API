@@ -8,13 +8,30 @@ namespace DatingApp.API.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Reports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    SenderId = table.Column<int>(nullable: false),
+                    UserId = table.Column<int>(nullable: false),
+                    ReportedFor = table.Column<string>(nullable: true),
+                    ReportSent = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reports", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(nullable: true),
+                    FacebookUID = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
+                    Phone = table.Column<string>(nullable: true),
                     PasswordHash = table.Column<byte[]>(nullable: true),
                     PasswordSalt = table.Column<byte[]>(nullable: true),
                     VerificationToken = table.Column<string>(nullable: true),
@@ -22,23 +39,32 @@ namespace DatingApp.API.Migrations
                     PasswordReset = table.Column<DateTime>(nullable: true),
                     ResetToken = table.Column<string>(nullable: true),
                     ResetTokenExpires = table.Column<DateTime>(nullable: true),
+                    Role = table.Column<int>(nullable: false),
+                    Status = table.Column<int>(nullable: false),
                     Created = table.Column<DateTime>(nullable: false),
                     Updated = table.Column<DateTime>(nullable: true),
-                    Phone = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
                     Gender = table.Column<string>(nullable: true),
+                    Height = table.Column<byte>(nullable: false),
+                    Weight = table.Column<byte>(nullable: false),
+                    Interests = table.Column<string>(nullable: true),
+                    SexualOrientation = table.Column<string>(nullable: true),
+                    LookingFor = table.Column<string>(nullable: true),
                     DateOfBirth = table.Column<DateTime>(nullable: true),
                     LastActive = table.Column<DateTime>(nullable: false),
-                    Introduction = table.Column<string>(nullable: true),
-                    Interests = table.Column<string>(nullable: true),
-                    Height = table.Column<int>(nullable: false),
-                    SexualOrientation = table.Column<string>(nullable: true),
+                    Location = table.Column<string>(nullable: true),
+                    Bio = table.Column<string>(nullable: true),
                     JobTitle = table.Column<string>(nullable: true),
                     School = table.Column<string>(nullable: true),
                     Company = table.Column<string>(nullable: true),
-                    City = table.Column<string>(nullable: true),
-                    Country = table.Column<string>(nullable: true),
-                    Role = table.Column<int>(nullable: false),
-                    Status = table.Column<int>(nullable: false)
+                    BodyType = table.Column<string>(nullable: true),
+                    HairColor = table.Column<string>(nullable: true),
+                    EyeColor = table.Column<string>(nullable: true),
+                    LiveWith = table.Column<string>(nullable: true),
+                    Children = table.Column<string>(nullable: true),
+                    Smoking = table.Column<string>(nullable: true),
+                    Drinking = table.Column<string>(nullable: true),
+                    HideAge = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -204,6 +230,9 @@ namespace DatingApp.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "RefreshToken");
+
+            migrationBuilder.DropTable(
+                name: "Reports");
 
             migrationBuilder.DropTable(
                 name: "Values");
