@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace DatingApp.API.Helpers
+namespace DatingApp.API.Helpers.Attributes
 {
     public class ValidDateOfBirthAttribute : ValidationAttribute
     {

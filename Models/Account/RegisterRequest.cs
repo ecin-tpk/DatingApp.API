@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.Attributes;
 
 namespace DatingApp.API.Models.Account
 {

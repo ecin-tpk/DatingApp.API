@@ -127,11 +127,11 @@ namespace DatingApp.API.Services
         {
             var userFromRepo = await GetUser(id);
 
-            // Validate on update email
-            if (userFromRepo.Email != model.Email && await _context.Users.AnyAsync(u => u.Email == model.Email))
-            {
-                throw new AppException($"Email '{model.Email}' is already taken");
-            }
+            //// Validate on update email
+            //if (userFromRepo.Email != model.Email && await _context.Users.AnyAsync(u => u.Email == model.Email))
+            //{
+            //    throw new AppException($"Email '{model.Email}' is already taken");
+            //}
 
             _mapper.Map(model, userFromRepo);
 

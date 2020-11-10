@@ -15,6 +15,7 @@ using DeviceDetectorNET;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using static Google.Apis.Auth.GoogleJsonWebSignature;
 
 namespace DatingApp.API.Services
 {
@@ -24,7 +25,8 @@ namespace DatingApp.API.Services
         Task Register(RegisterRequest model, string origin);
         void VerifyEmail(string token);
         Task<LoginResponse> Login(LoginRequest model, string ipAddress, DeviceDetector deviceDetector);
-        Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin);
+        Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector);
+        Task<LoginResponse> GoogleLogin(GoogleLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin);
         Task ForgotPassword(ForgotPasswordRequest model, string origin);
         Task ResetPassword(ResetPasswordRequest model);
         Task UpdatePassword(int id, UpdatePasswordRequest model);
@@ -131,9 +133,9 @@ namespace DatingApp.API.Services
         }
 
         // Login with facebook
-        public async Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin)
+        public async Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector)
         {
-            var facebookUser = await _facebookService.GetUser(model, origin);
+            var facebookUser = await _facebookService.GetUser(model);
 
             var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
 
@@ -177,6 +179,71 @@ namespace DatingApp.API.Services
             response.RefreshToken = refreshToken.Token;
 
             return response;
+        }
+
+        // Login with google
+        public async Task<LoginResponse> GoogleLogin(GoogleLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin)
+        {
+            try
+            {
+                var payload = await ValidateAsync(model.GoogleToken, new ValidationSettings
+                {
+                    Audience = new[] { "95578192260-amn3dtj5avlfmk9su13ujrkqsnhr4btm.apps.googleusercontent.com" },
+                    ExpirationTimeClockTolerance = new TimeSpan(0)
+                });
+            }
+            catch
+            {
+                throw new AppException("Invalid token");
+            }
+
+
+            return null;
+
+            //var facebookUser = await _facebookService.GetUser(model, origin);
+
+            //var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
+
+            //// Create new user in db to store needed info
+            //if (user == null)
+            //{
+            //    var userToCreate = _mapper.Map<User>(facebookUser);
+            //    userToCreate.Created = DateTime.Now;
+            //    userToCreate.Role = Role.User;
+            //    userToCreate.Status = Status.Active;
+            //    userToCreate.Verified = DateTime.Now;
+
+            //    _context.Users.Add(userToCreate);
+
+            //    // Add photo url after saving to db to have user id
+            //    if (await _context.SaveChangesAsync() > 0)
+            //    {
+            //        var createdUser = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
+
+            //        var photo = new Photo
+            //        {
+            //            Url = facebookUser.Picture,
+            //            DateAdded = DateTime.Now,
+            //            IsMain = true
+            //        };
+
+            //        createdUser.Photos.Add(photo);
+
+            //        await _context.SaveChangesAsync();
+            //    }
+
+            //    user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.FacebookUID == facebookUser.FacebookUID);
+            //}
+
+            //var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);
+
+            //var jwtToken = GenerateJwtToken(user);
+
+            //var response = _mapper.Map<LoginResponse>(user);
+            //response.JwtToken = jwtToken;
+            //response.RefreshToken = refreshToken.Token;
+
+            //return response;
         }
 
         // Verify email after register

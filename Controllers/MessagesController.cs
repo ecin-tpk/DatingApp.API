@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Claims;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Hubs;
 using DatingApp.API.Models.Messages;
 using DatingApp.API.Services;

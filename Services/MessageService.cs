@@ -61,7 +61,7 @@ namespace DatingApp.API.Services
 
             if (await _userService.GetUser(model.RecipientId) == null)
             {
-                throw new AppException("User not found");
+                throw new KeyNotFoundException("User not found");
             }
 
             var message = _mapper.Map<Message>(model);

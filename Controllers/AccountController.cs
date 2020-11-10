@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Models.Account;
 using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
@@ -45,13 +46,26 @@ namespace DatingApp.API.Controllers
             return Ok(response);
         }
 
-        // POST: Login with facebook
+        // POST: Login with Facebook
         [HttpPost("facebook-login")]
         public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginRequest model)
         {
             var dd = new DeviceDetector(Request.Headers["User-Agent"]);
 
-            var response = await _accountService.FacebookLogin(model, IpAddress(), dd, Request.Headers["origin"]);
+            var response = await _accountService.FacebookLogin(model, IpAddress(), dd);
+
+            Response.SetTokenCookie(response.RefreshToken);
+
+            return Ok(response);
+        }
+
+        // POST: Login with Google
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest model)
+        {
+            var dd = new DeviceDetector(Request.Headers["User-Agent"]);
+
+            var response = await _accountService.GoogleLogin(model, IpAddress(), dd, Request.Headers["origin"]);
 
             Response.SetTokenCookie(response.RefreshToken);
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using DatingApp.API.Entities;
 using DatingApp.API.Hubs;
 using DatingApp.API.Models.Reports;
 using DatingApp.API.Services;
@@ -28,13 +29,33 @@ namespace DatingApp.API.Controllers
             _reportsHub = reportsHub;
         }
 
+        //// GET: Get message by id
+        //[HttpGet("{id}", Name = "GetReportById")]
+        //public async Task<IActionResult> GetById(int userId, int id)
+        //{
+        //    var message = await _reportService.GetById(id);
+        //    if (message == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return Ok(message);
+        //}
+
         // POST: Send report
         [HttpPost]
-        public async Task<IActionResult> CreateReport(NewReportRequest model)
+        public async Task<IActionResult> CreateReport(int userId, NewReportRequest model)
         {
+            if (userId != User.Id)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
+
+            await _reportService.Create(userId, model);
+
             await _reportsHub.Clients.All.ReceiveReport(model);
 
-            return Ok();
+            return Ok("User reported successfully");
         }
 
         // DELETE: Delete report

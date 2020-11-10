@@ -12,7 +12,7 @@ namespace DatingApp.API.Services
     #region Interface
     public interface IFacebookService
     {
-        Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model, string origin);
+        Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model);
     }
     #endregion
 
@@ -33,9 +33,10 @@ namespace DatingApp.API.Services
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model, string origin)
+        // Get user
+        public async Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model)
         {
-            var result = await GetAsync<dynamic>(model.facebookToken, model.facebookUserId, "fields=name,email,birthday,location,gender,picture.width(500)");
+            var result = await GetAsync<dynamic>(model.FacebookToken, model.FacebookUserId, "fields=name,email,birthday,location,gender,picture.width(500)");
             if (result == null)
             {
                 throw new AppException("Invalid credentials");
@@ -52,13 +53,14 @@ namespace DatingApp.API.Services
                 Gender = result.gender,
                 DateOfBirth = result.birthday,
                 City = result.location.name,
-                FacebookUID = model.facebookUserId,
+                FacebookUID = model.FacebookUserId,
                 Picture = result.picture.data.url
             };
 
             return account;
         }
 
+        // Helpers
         private async Task<T> GetAsync<T>(string accessToken, string facebookUserId, string args = null)
         {
             var response = await _httpClient.GetAsync($"{facebookUserId}?{args}&access_token={accessToken}");

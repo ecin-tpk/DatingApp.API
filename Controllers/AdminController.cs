@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.Attributes;
+using DatingApp.API.Helpers.RequestParams;
 using DatingApp.API.Models.Account;
 using DatingApp.API.Models.Admin;
 using DatingApp.API.Models.Users;
@@ -14,17 +16,19 @@ namespace DatingApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AdminController: BaseController
+    public class AdminController : BaseController
     {
         private readonly IMapper _mapper;
         private readonly IAccountService _accountService;
         private readonly IUserService _userService;
+        private readonly IReportService _reportService;
 
-        public AdminController(IMapper mapper, IAccountService accountService, IUserService userService)
+        public AdminController(IMapper mapper, IAccountService accountService, IUserService userService, IReportService reportService)
         {
             _mapper = mapper;
             _accountService = accountService;
             _userService = userService;
+            _reportService = reportService;
         }
 
         // POST: Login for admin
@@ -84,6 +88,28 @@ namespace DatingApp.API.Controllers
             var newUsersPerMonth = await _userService.GetNewUsersPerMonth(year);
 
             return Ok(newUsersPerMonth);
+        }
+
+        // GET: Get user reports (paginated)
+        [HttpGet("users/reports")]
+        [Authorize(Role.Admin)]
+        public async Task<IActionResult> GetUserReports([FromQuery] ReportParams reportParams)
+        {
+            var reports = await _reportService.GetPagination(reportParams);
+
+            Response.AddPagination(reports.CurrentPage, reports.PageSize, reports.TotalCount, reports.TotalPages);
+
+            return Ok(reports);
+        }
+
+        // DELETE: Delete user report
+        [HttpDelete("users/reports/{id:int}")]
+        [Authorize(Role.Admin)]
+        public async Task<IActionResult> DeleteReport(int id)
+        {
+            await _reportService.Delete(id);
+
+            return Ok("Report deleted successfully");
         }
 
         // Helpers

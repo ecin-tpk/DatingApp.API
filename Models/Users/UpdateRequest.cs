@@ -1,24 +1,25 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using DatingApp.API.Entities;
-using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.Attributes;
 
 namespace DatingApp.API.Models.Users
 {
     public class UpdateRequest
     {
-        private string _email;
+        //private string _email;
+
+        //[EmailAddress]
+        //public string Email { get => _email != null ? _email.ToLower() : _email; set => _email = ReplaceEmptyWithNull(value.ToLower()); }
+
         private string _role;
 
-        [EmailAddress]
-        public string Email { get => _email != null ? _email.ToLower() : _email; set => _email = ReplaceEmptyWithNull(value.ToLower()); }
+        [EnumDataType(typeof(Role))]
+        public string Role { get => _role; set => _role = ReplaceEmptyWithNull(value); }
 
         [MaxLength(15)]
         [RegularExpression("^[0-9]*$", ErrorMessage ="Invalid phone number")]
         public string Phone { get; set; }
-
-        [EnumDataType(typeof(Role))]
-        public string Role { get => _role; set => _role = ReplaceEmptyWithNull(value); }
 
         [EnumDataType(typeof(Status))]
         public string Status { get; set; }

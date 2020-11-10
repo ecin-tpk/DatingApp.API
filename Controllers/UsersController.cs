@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
 using Microsoft.AspNetCore.Mvc;
