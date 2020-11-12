@@ -52,12 +52,14 @@ namespace DatingApp.API.Services
             string message;
             if (!string.IsNullOrEmpty(origin))
             {
-                var verifyUrl = $"{origin}/account/verify-email?token={user.VerificationToken}";
+                var verifyUrl = $"{origin}/api/account/verify-email?token={user.VerificationToken}";
                 message = $@"<p>Please click the link below to verify your email address:</p><p><a href=""{verifyUrl}"">{verifyUrl}</a></p><p><code>{user.VerificationToken}</code></p>";
             }
             else
             {
-                message = $@"<p>Please use the below token to verify your email address with the <code>/account/verify-email</code> api route:</p><p><code>{user.VerificationToken}</code></p>";
+                var verifyUrl = $"http://localhost:5000/api/account/verify-email?token={user.VerificationToken}";
+                message = $@"<p>Please click the link below to verify your email address:</p><p><a href=""{verifyUrl}"">{verifyUrl}</a></p><p><code>{user.VerificationToken}</code></p>";
+                //message = $@"<p>Please use the below token to verify your email address with the <code>/api/account/verify-email</code> api route:</p><p><code>{user.VerificationToken}</code></p>";
             }
 
             Send(recipientEmail: user.Email, subject: "Complete your Dating App registration!", htmlBody: $@"<h4>Verify Email</h4><p>Thanks for registering!</p>{message}");

@@ -73,10 +73,10 @@ namespace DatingApp.API.Controllers
         }
 
         // POST: Verify email
-        [HttpPost("verify-email")]
-        public IActionResult VerifyEmail(VerifyEmailRequest model)
+        [HttpGet("verify-email")]
+        public IActionResult VerifyEmail([FromQuery] string token)
         {
-            _accountService.VerifyEmail(model.Token);
+            _accountService.VerifyEmail(token);
 
             return Ok(new { message = "Verification successful, you can now login" });
         }
