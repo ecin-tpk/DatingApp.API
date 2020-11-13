@@ -1,17 +1,9 @@
-﻿using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using AutoMapper;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
+﻿using System.Threading.Tasks;
 using DatingApp.API.Entities;
-using DatingApp.API.Helpers;
-using DatingApp.API.Models;
+using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Models.Photos;
 using DatingApp.API.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DatingApp.API.Controllers
 {
@@ -41,7 +33,7 @@ namespace DatingApp.API.Controllers
         public async Task<IActionResult> Upload(int userId, [FromForm] UploadRequest model)
         {
             // Users can upload their own photo and admins can update any user's photo
-            if (userId != User.Id && User.Role != Entities.Role.Admin)
+            if (userId != User.Id && User.Role != Role.Admin)
             {
                 return Unauthorized(new { message = "Unauthorized" });
             }
@@ -51,11 +43,12 @@ namespace DatingApp.API.Controllers
             return CreatedAtRoute("GetPhotoById", new { userId, id = photo.Id }, photo);
         }
 
+        // POST: Set as main photo
         [HttpPost("{id}/set-main")]
         public async Task<IActionResult> SetMainPhoto(int userId, int id)
         {
             // Users can upload their own photo and admins can update any user's photo
-            if (userId != User.Id && User.Role != Entities.Role.Admin)
+            if (userId != User.Id && User.Role != Role.Admin)
             {
                 return Unauthorized(new { message = "Unauthorized" });
             }
@@ -70,7 +63,7 @@ namespace DatingApp.API.Controllers
         public async Task<IActionResult> DeletePhoto(int userId, int id)
         {
             // Users can delete their own photo and admins can delete any user's photo
-            if (userId != User.Id && User.Role != Entities.Role.Admin)
+            if (userId != User.Id && User.Role != Role.Admin)
             {
                 return Unauthorized(new { message = "Unauthorized" });
             }

@@ -148,7 +148,7 @@ namespace DatingApp.API.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Url = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
+                    Order = table.Column<byte>(nullable: false),
                     DateAdded = table.Column<DateTime>(nullable: false),
                     IsMain = table.Column<bool>(nullable: false),
                     PublicID = table.Column<string>(nullable: true),

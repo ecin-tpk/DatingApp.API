@@ -55,19 +55,17 @@ namespace DatingApp.API.Services
             var uploadResult = new ImageUploadResult();
 
             var file = model.File;
-            if (file.Length > 0)
+            using (var stream = file.OpenReadStream())
             {
-                using (var stream = file.OpenReadStream())
+                var uploadParams = new ImageUploadParams()
                 {
-                    var uploadParams = new ImageUploadParams()
-                    {
-                        File = new FileDescription(file.Name, stream),
-                        Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
-                    };
+                    File = new FileDescription(file.Name, stream),
+                    Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
+                };
 
-                    uploadResult = _cloudinary.Upload(uploadParams);
-                }
+                uploadResult = _cloudinary.Upload(uploadParams);
             }
+
 
             model.Url = uploadResult.Url.ToString();
             model.PublicId = uploadResult.PublicId;

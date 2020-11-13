@@ -79,10 +79,10 @@ namespace DatingApp.API.Migrations
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsMain")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte>("Order")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PublicID")
