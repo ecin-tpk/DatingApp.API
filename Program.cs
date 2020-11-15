@@ -39,6 +39,7 @@ namespace DatingApp.API
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls(new string[] { "http://192.168.0.108:5000", "http://localhost:5000" });
                 });
     }
 }
