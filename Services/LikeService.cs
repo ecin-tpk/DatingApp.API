@@ -49,7 +49,7 @@ namespace DatingApp.API.Services
                 LikeeId = recipientId
             };
 
-            _context.Add(like);
+            _context.Add(like); 
 
             await _context.SaveChangesAsync();
         }

@@ -19,17 +19,17 @@ namespace DatingApp.API.Middleware
         public JwtMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings)
         {
             _next = next;
-
             _appSettings = appSettings.Value;
         }
 
         // Invoke jwt token
         public async Task Invoke(HttpContext httpContext, DataContext dataContext)
         {
-            var token = httpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            if (token != null)
+            var token = httpContext.Request.Headers["Authorization"].FirstOrDefault();
+
+            if(token != null && token.StartsWith("Bearer") && token?.Split(" ").Last() != null)
             {
-                await AttachUserToContext(httpContext, dataContext, token);
+                await AttachUserToContext(httpContext, dataContext, token?.Split(" ").Last());
             }
 
             await _next(httpContext);

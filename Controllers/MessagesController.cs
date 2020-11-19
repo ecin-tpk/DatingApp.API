@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.RequestParams;
 using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Hubs;
 using DatingApp.API.Models.Messages;
@@ -49,33 +50,32 @@ namespace DatingApp.API.Controllers
             return Ok(message);
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetMessagesForUser(int userId, [FromQuery]MessageParams messageParams)
-        //{
-        //    if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-        //    {
-        //        return Unauthorized();
-        //    }
+        // GET: Get messages from matched users (paginated)
+        [HttpGet]
+        public async Task<IActionResult> GetMessages(int userId, [FromQuery] MessageParams messageParams)
+        {
+            if (userId != User.Id)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-        //    messageParams.UserId = userId;
+            messageParams.UserId = userId;
 
-        //    var messagesFromRepo = await _repo.GetMessagesForUser(messageParams);
+            var messages = await _messageService.GetMessages(messageParams);
 
-        //    var messages = _mapper.Map<IEnumerable<MessageToReturnDto>>(messagesFromRepo);
+            Response.AddPagination(messages.CurrentPage, messages.PageSize, messages.TotalCount, messages.TotalPages);
 
-        //    Response.AddPagination(messagesFromRepo.CurrentPage, messagesFromRepo.PageSize, messagesFromRepo.TotalCount, messagesFromRepo.TotalPages);
-
-        //    return Ok(messages);
-        //}
+            return Ok(_mapper.Map<IEnumerable<MessageResponse>>(messages));
+        }
 
         // GET: Get message thread (paginated)
         [HttpGet("thread/{recipientId:int}")]
-        public async Task<IActionResult> GetPagination(int recipientId, [FromQuery] MessageThreadParams msgThreadParams)
+        public async Task<IActionResult> GetMessageThread(int recipientId, [FromQuery] MessageThreadParams msgThreadParams)
         {
             msgThreadParams.UserId = User.Id;
             msgThreadParams.RecipientId = recipientId;
 
-            var messages = await _messageService.GetPagination(msgThreadParams);
+            var messages = await _messageService.GetMessageThread(msgThreadParams);
 
             Response.AddPagination(messages.CurrentPage, messages.PageSize, messages.TotalCount, messages.TotalPages);
 

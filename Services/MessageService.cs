@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.RequestParams;
 using DatingApp.API.Hubs;
 using DatingApp.API.Models.Messages;
 using Microsoft.AspNetCore.SignalR;
@@ -15,12 +16,13 @@ namespace DatingApp.API.Services
     #region Interface
     public interface IMessageService
     {
+        Task<PagedList<Message>> GetMessages(MessageParams messageParams);
         Task<Message> GetById(int id);
         Task<MessageResponse> Create(int userId, NewMessageRequest model);
         Task Delete(int id, int userId);
         Task MarkAsRead(int id, int userId);
         Task<PagedList<Message>> GetMessageForUser();
-        Task<PagedList<Message>> GetPagination(MessageThreadParams msgThreadparams);
+        Task<PagedList<Message>> GetMessageThread(MessageThreadParams msgThreadparams);
     }
     #endregion
 
@@ -37,6 +39,58 @@ namespace DatingApp.API.Services
             _likeService = likeService;
             _mapper = mapper;
             _context = context;
+        }
+
+        // Get messages
+        public async Task<PagedList<Message>> GetMessages(MessageParams messageParams)
+        {
+            var messages = _context.Messages
+                .Include(u => u.Sender).ThenInclude(p => p.Photos)
+                .Include(u => u.Recipient).ThenInclude(p => p.Photos).AsQueryable();
+
+            switch (messageParams.MessageContainer)
+            {
+                case "inbox":
+                    messages = messages.Where(u => u.RecipientId == messageParams.UserId && u.RecipientDeleted == false);
+                    break;
+                case "outbox":
+                    messages = messages.Where(u => u.SenderId == messageParams.UserId && u.SenderDeleted == false);
+                    break;
+                case "unread":
+                    messages = messages.Where(u =>
+                        u.RecipientId == messageParams.UserId &&
+                        u.RecipientDeleted == false &&
+                        u.IsRead == false);
+                    break;
+                default:
+                    messages = messages.Where(m =>
+                        (m.RecipientId == messageParams.UserId || m.SenderId == messageParams.UserId) &&
+                        m.SenderDeleted == false && m.RecipientDeleted == false);
+                    break;
+            }
+
+            // Get last message of every conversation
+            var source = messages
+                .Select(m => new
+                {
+                    Key = new
+                    {
+                        m.SenderId,
+                        m.RecipientId
+                    },
+                    Message = m
+                });
+
+            messages = source.Select(e => e.Key)
+                .Distinct()
+                .SelectMany(key =>
+                    source.Where(e => e.Key.SenderId == key.SenderId && e.Key.RecipientId == key.RecipientId)
+                        .Select(e => e.Message)
+                        .OrderByDescending(m => m.MessageSent)
+                        .Take(1)
+                ).OrderByDescending(m => m.MessageSent);
+
+            return await PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
         }
 
         // Get message by id
@@ -118,7 +172,7 @@ namespace DatingApp.API.Services
         }
 
         // Get messages of a thread (paginated)
-        public async Task<PagedList<Message>> GetPagination(MessageThreadParams msgThreadparams)
+        public async Task<PagedList<Message>> GetMessageThread(MessageThreadParams msgThreadparams)
         {
             var messages = _context.Messages
                 .Include(u => u.Sender).ThenInclude(p => p.Photos)

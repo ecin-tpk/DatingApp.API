@@ -1,4 +1,4 @@
-﻿namespace DatingApp.API.Helpers
+﻿namespace DatingApp.API.Helpers.RequestParams
 {
     public class MessageThreadParams
     {
