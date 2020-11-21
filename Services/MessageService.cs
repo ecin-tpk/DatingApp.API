@@ -18,20 +18,19 @@ namespace DatingApp.API.Services
     {
         Task<PagedList<Message>> GetMessages(MessageParams messageParams);
         Task<Message> GetById(int id);
-        Task<MessageResponse> Create(int userId, NewMessageRequest model);
+        Task<NewMessageResponse> Create(int userId, NewMessageRequest model);
         Task Delete(int id, int userId);
         Task MarkAsRead(int id, int userId);
-        Task<PagedList<Message>> GetMessageForUser();
         Task<PagedList<Message>> GetMessageThread(MessageThreadParams msgThreadparams);
     }
     #endregion
 
     public class MessageService : IMessageService
     {
+        private readonly DataContext _context;
+        private readonly IMapper _mapper;
         private readonly IUserService _userService;
         private readonly ILikeService _likeService;
-        private readonly IMapper _mapper;
-        private readonly DataContext _context;
 
         public MessageService(IUserService userService, ILikeService likeService, IMapper mapper, DataContext context)
         {
@@ -41,54 +40,48 @@ namespace DatingApp.API.Services
             _context = context;
         }
 
-        // Get messages
+        // Get last messages
         public async Task<PagedList<Message>> GetMessages(MessageParams messageParams)
         {
-            var messages = _context.Messages
-                .Include(u => u.Sender).ThenInclude(p => p.Photos)
-                .Include(u => u.Recipient).ThenInclude(p => p.Photos).AsQueryable();
+            var user = await _context.Users
+                .Include(u => u.Photos)
+                .Include(u => u.MessagesSent)
+                .ThenInclude(m => m.Recipient)
+                .ThenInclude(u => u.Photos)
+                .Include(u => u.MessagesReceived)
+                .SingleOrDefaultAsync(u => u.Id == messageParams.UserId);
 
-            switch (messageParams.MessageContainer)
-            {
-                case "inbox":
-                    messages = messages.Where(u => u.RecipientId == messageParams.UserId && u.RecipientDeleted == false);
-                    break;
-                case "outbox":
-                    messages = messages.Where(u => u.SenderId == messageParams.UserId && u.SenderDeleted == false);
-                    break;
-                case "unread":
-                    messages = messages.Where(u =>
-                        u.RecipientId == messageParams.UserId &&
-                        u.RecipientDeleted == false &&
-                        u.IsRead == false);
-                    break;
-                default:
-                    messages = messages.Where(m =>
-                        (m.RecipientId == messageParams.UserId || m.SenderId == messageParams.UserId) &&
-                        m.SenderDeleted == false && m.RecipientDeleted == false);
-                    break;
-            }
+            user.Name = null;
+            user.Photos = null;
 
-            // Get last message of every conversation
-            var source = messages
-                .Select(m => new
-                {
-                    Key = new
+            var sentMessages = user.MessagesSent
+                .GroupBy(m => new { m.SenderId, m.RecipientId })
+                .ToDictionary(m =>
+                    m.Key,
+                    m => m.OrderByDescending(m => m.MessageSent).FirstOrDefault());
+
+            var receivedMessages = user.MessagesReceived
+                .GroupBy(m => new { m.SenderId, m.RecipientId })
+                .ToDictionary(m =>
+                    m.Key,
+                    m => m.OrderByDescending(m => m.MessageSent).FirstOrDefault());
+
+            var messages = user.MessagesSent
+                .Concat(user.MessagesReceived)
+                .GroupBy(
+                    m =>
+                    new
                     {
-                        m.SenderId,
-                        m.RecipientId
+                        Min = Math.Min(m.SenderId, m.RecipientId),
+                        Max = Math.Max(m.SenderId, m.RecipientId)
                     },
-                    Message = m
-                });
+                    (key, g) => g.OrderByDescending(m => m.MessageSent).First()
+                )
+                .OrderByDescending(m => m.MessageSent)
+                .AsQueryable();
 
-            messages = source.Select(e => e.Key)
-                .Distinct()
-                .SelectMany(key =>
-                    source.Where(e => e.Key.SenderId == key.SenderId && e.Key.RecipientId == key.RecipientId)
-                        .Select(e => e.Message)
-                        .OrderByDescending(m => m.MessageSent)
-                        .Take(1)
-                ).OrderByDescending(m => m.MessageSent);
+            // Filter messages
+            messages = FilterMessages(messages, messageParams);
 
             return await PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
         }
@@ -100,7 +93,7 @@ namespace DatingApp.API.Services
         }
 
         // Create new message
-        public async Task<MessageResponse> Create(int userId, NewMessageRequest model)
+        public async Task<NewMessageResponse> Create(int userId, NewMessageRequest model)
         {
             // Must find sender for automapping
             var user = await _userService.GetUser(userId);
@@ -124,7 +117,7 @@ namespace DatingApp.API.Services
 
             if (await _context.SaveChangesAsync() > 0)
             {
-                return _mapper.Map<MessageResponse>(message);
+                return _mapper.Map<NewMessageResponse>(message);
             }
 
             throw new AppException("Send messaged failed");
@@ -166,11 +159,6 @@ namespace DatingApp.API.Services
             await _context.SaveChangesAsync();
         }
 
-        public Task<PagedList<Message>> GetMessageForUser()
-        {
-            throw new NotImplementedException();
-        }
-
         // Get messages of a thread (paginated)
         public async Task<PagedList<Message>> GetMessageThread(MessageThreadParams msgThreadparams)
         {
@@ -191,6 +179,35 @@ namespace DatingApp.API.Services
                 ).AsQueryable().OrderBy(m => m.MessageSent);
 
             return await PagedList<Message>.CreateAsync(messages, msgThreadparams.PageNumber, msgThreadparams.PageSize);
+        }
+
+        // Helpers
+
+        // Sort messages
+        private IQueryable<Message> FilterMessages(IQueryable<Message> messages, MessageParams messageParams)
+        {
+            switch (messageParams.MessageContainer)
+            {
+                case "inbox":
+                    messages = messages.Where(u => u.RecipientId == messageParams.UserId && u.RecipientDeleted == false);
+                    break;
+                case "outbox":
+                    messages = messages.Where(u => u.SenderId == messageParams.UserId && u.SenderDeleted == false);
+                    break;
+                case "unread":
+                    messages = messages.Where(u =>
+                        u.RecipientId == messageParams.UserId &&
+                        u.RecipientDeleted == false &&
+                        u.IsRead == false);
+                    break;
+                default:
+                    messages = messages.Where(m =>
+                        (m.RecipientId == messageParams.UserId || m.SenderId == messageParams.UserId) &&
+                        m.SenderDeleted == false && m.RecipientDeleted == false);
+                    break;
+            }
+
+            return messages;
         }
     }
 }

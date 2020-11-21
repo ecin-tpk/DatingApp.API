@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.RequestParams;
 using DatingApp.API.Models.Admin;
 using DatingApp.API.Models.Users;
 using Microsoft.EntityFrameworkCore;
@@ -30,11 +31,13 @@ namespace DatingApp.API.Services
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly ILikeService _likeService;
 
-        public UserService(DataContext contenxt, IMapper mapper)
+        public UserService(DataContext contenxt, IMapper mapper, ILikeService likeService)
         {
             _context = contenxt;
             _mapper = mapper;
+            _likeService = likeService;
         }
 
         // Get users (paginated)
@@ -47,6 +50,13 @@ namespace DatingApp.API.Services
             );
             users = users.Where(u => u.Status == userParams.Status);
 
+            if (userParams.IsMatched)
+            {
+                var matchedUsers = await _likeService.GetMatched(userParams.UserId);
+                users = users.Where(u => matchedUsers.Contains(u.Id));
+
+                //users = (IQueryable<User>)_mapper.Map<IQueryable<MatchedUserResponse>>(users);
+            }
             if (!string.IsNullOrEmpty(userParams.Name))
             {
                 users = users.Where(u => u.Name.ToLower().Contains(userParams.Name));
@@ -55,7 +65,7 @@ namespace DatingApp.API.Services
             {
                 users = users.Where(u => userParams.Verification == "true" ? u.Verified.HasValue : !u.Verified.HasValue);
             }
-            if (!string.IsNullOrEmpty(userParams.Gender))
+            if (userParams.Gender == "male" || userParams.Gender == "female")
             {
                 users = users.Where(u => u.Gender == userParams.Gender);
             }
@@ -71,6 +81,7 @@ namespace DatingApp.API.Services
 
             //    users = users.Where(u => userLikees.Contains(u.Id));
             //}
+
             if (userParams.MinAge != 18 || userParams.MaxAge != 99)
             {
                 var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
@@ -114,7 +125,7 @@ namespace DatingApp.API.Services
         public async Task<UserDetailsResponse> GetById(int id)
         {
             var user = await GetUser(id);
-            if(user.Role == Role.Admin)
+            if (user.Role == Role.Admin)
             {
                 throw new KeyNotFoundException("User not found");
             }

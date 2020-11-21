@@ -1,31 +1,24 @@
 ﻿using DatingApp.API.Entities;
 
-namespace DatingApp.API.Helpers
+namespace DatingApp.API.Helpers.RequestParams
 {
-    public class UserParams
+    public class UserParams : PaginationParams
     {
-        private const int MaxPageSize = 10;
-        private int pageSize = 10;
-
-        public int PageSize
-        {
-            get
-            {
-                return pageSize;
-            }
-            set { pageSize = (value > MaxPageSize) ? MaxPageSize : value; }
-        }
-
-        public int PageNumber { get; set; } = 1;
         public int UserId { get; set; }
         public string Gender { get; set; }
         public string Name { get; set; }
-        public string Verification { get; set; }
-        public Status Status { get; set; }
         public int MinAge { get; set; } = 18;
         public int MaxAge { get; set; } = 99;
-        public string OrderBy { get; set; }
+        public int MinHeight { get; set; }
+        public int MaxHeight { get; set; }
         public bool Likees { get; set; } = false;
-        public bool Likers { get; set; } = false;        
+        public bool Likers { get; set; } = false;
+        public bool IsMatched { get; set; }
+
+        public string OrderBy { get; set; }
+        public string Verification { get; set; }
+        public Status Status { get; set; }
+
+        public UserParams() : base(10) { }
     }
 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Helpers.RequestParams;
 using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
@@ -38,6 +39,11 @@ namespace DatingApp.API.Controllers
             var users = await _userService.GetPagination(userParams);
 
             Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+
+            if (userParams.IsMatched)
+            {
+                return Ok(_mapper.Map<IEnumerable<MatchedUserResponse>>(users));
+            }
 
             return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
         }

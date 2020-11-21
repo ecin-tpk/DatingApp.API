@@ -1,4 +1,4 @@
-﻿    using System.Linq;
+﻿using System.Linq;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Models.Account;
@@ -48,15 +48,27 @@ namespace DatingApp.API.Helpers
             CreateMap<User, LoginResponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
             CreateMap<FacebookLoginResponse, User>();
+            CreateMap<User, MatchedUserResponse>()
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
 
             CreateMap<UploadRequest, Photo>();
             CreateMap<Photo, PhotoResponse>();
 
             CreateMap<NewMessageRequest, Message>().ReverseMap();
-            CreateMap<Message, MessageResponse>()
+            CreateMap<Message, NewMessageResponse>()
                 .ForMember(dest => dest.SenderPhotoUrl, opt => opt.MapFrom(src => src.Sender.Photos.FirstOrDefault(p => p.IsMain).Url))
                 .ForMember(dest => dest.RecipientPhotoUrl, opt => opt.MapFrom(src => src.Recipient.Photos.SingleOrDefault(p => p.IsMain).Url));
-
+            CreateMap<Message, MessageResponse>()
+                .ForMember(
+                    dest => dest.PhotoUrl,
+                    opt => opt.MapFrom(src => src.Recipient.Photos != null ?
+                        src.Recipient.Photos.SingleOrDefault(p => p.IsMain).Url :
+                        src.Sender.Photos.SingleOrDefault(p => p.IsMain).Url)
+                )
+                .ForMember(
+                    dest => dest.Name,
+                    opt => opt.MapFrom(src => src.Recipient.Name ?? src.Sender.Name)
+                );
 
             CreateMap<NewReportRequest, Report>().ReverseMap();
         }

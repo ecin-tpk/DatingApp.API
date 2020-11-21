@@ -79,7 +79,7 @@ namespace DatingApp.API.Controllers
 
             Response.AddPagination(messages.CurrentPage, messages.PageSize, messages.TotalCount, messages.TotalPages);
 
-            return Ok(_mapper.Map<IEnumerable<MessageResponse>>(messages));
+            return Ok(_mapper.Map<IEnumerable<NewMessageResponse>>(messages));
         }
 
         // POST: Send messages

@@ -6,7 +6,7 @@ namespace DatingApp.API.Hubs
 {
     public interface IMessageClient
     {
-        Task ReceiveMessage(MessageResponse message);
+        Task ReceiveMessage(NewMessageResponse message);
     }
 
     public class MessagesHub : Hub<IMessageClient>

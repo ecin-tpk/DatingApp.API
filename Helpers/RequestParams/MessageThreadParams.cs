@@ -1,21 +1,10 @@
 ﻿namespace DatingApp.API.Helpers.RequestParams
 {
-    public class MessageThreadParams
+    public class MessageThreadParams : PaginationParams
     {
-        private const int MaxPageSize = 20;
-        private int pageSize = 20;
-        public int PageNumber { get; set; } = 1;
-
-        public int PageSize
-        {
-            get
-            {
-                return pageSize;
-            }
-            set { pageSize = (value > MaxPageSize) ? MaxPageSize : value; }
-        }
-
         public int UserId { get; set; }
         public int RecipientId { get; set; }
+
+        public MessageThreadParams() : base(20) { }
     }
 }
