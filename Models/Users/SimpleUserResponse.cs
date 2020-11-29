@@ -1,7 +1,8 @@
 ﻿using System;
 namespace DatingApp.API.Models.Users
 {
-    public class MatchedUserResponse
+    // User response for matched users, users that liked me
+    public class SimpleUserResponse
     {
         public int Id { get; set; }
         public string Name { get; set; }

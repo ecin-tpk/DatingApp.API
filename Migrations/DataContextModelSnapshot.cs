@@ -24,6 +24,9 @@ namespace DatingApp.API.Migrations
                     b.Property<int>("LikeeId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Super")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("LikerId", "LikeeId");
 
                     b.HasIndex("LikeeId");
@@ -60,6 +63,9 @@ namespace DatingApp.API.Migrations
 
                     b.Property<int>("SenderId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

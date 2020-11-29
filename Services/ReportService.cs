@@ -14,7 +14,7 @@ namespace DatingApp.API.Services
     {
         Task<PagedList<Report>> GetPagination(ReportParams reportParams);
         Task<Report> GetById(int id);
-        Task Create(int userId, NewReportRequest model);
+        Task<Report> Create(int userId, NewReportRequest model);
         Task Delete(int id);
     }
     #endregion
@@ -41,7 +41,7 @@ namespace DatingApp.API.Services
         }
 
         // Create report
-        public async Task Create(int userId, NewReportRequest model)
+        public async Task<Report> Create(int userId, NewReportRequest model)
         {
             model.SenderId = userId;
 
@@ -54,7 +54,11 @@ namespace DatingApp.API.Services
 
             _context.Add(report);
 
-            await _context.SaveChangesAsync();
+            if (await _context.SaveChangesAsync() > 0) {
+                return report;
+            }
+
+            throw new AppException("Failed to send report");
         }
 
         // Delete report

@@ -18,12 +18,14 @@ namespace DatingApp.API.Services
     public interface IUserService
     {
         Task<PagedList<User>> GetPagination(UserParams userParams);
-        Task<UserDetailsResponse> GetById(int id);
+        //Task<UserDetailsResponse> GetById(int id);
+        Task<User> GetById(int id);
         Task<UpdateResponse> Update(int id, UpdateRequest model);
         Task<User> GetUser(int id);
         Task<int[]> GetNumberOfUsersByStatus();
         Task<UserResponse> Create(NewUserRequest model);
         Task<int[]> GetNewUsersPerMonth(int year);
+        List<int> GetAdminIds();
     }
     #endregion
 
@@ -69,19 +71,18 @@ namespace DatingApp.API.Services
             {
                 users = users.Where(u => u.Gender == userParams.Gender);
             }
-            //if (userParams.Likers)
-            //{
-            //    var userLikers = await GetUserLikes(userParams.UserId, userParams.Likers);
+            if (userParams.Likers)
+            {
+                var userLikers = await _likeService.GetUserLikes(userParams.UserId, true);
 
-            //    users = users.Where(u => userLikers.Contains(u.Id));
-            //}
-            //if (userParams.Likees)
-            //{
-            //    var userLikees = await GetUserLikes(userParams.UserId, userParams.Likers);
+                users = users.Where(u => userLikers.Contains(u.Id));
+            }
+            if (userParams.Likees)
+            {
+                var userLikees = await _likeService.GetUserLikes(userParams.UserId, false);
 
-            //    users = users.Where(u => userLikees.Contains(u.Id));
-            //}
-
+                users = users.Where(u => userLikees.Contains(u.Id));
+            }
             if (userParams.MinAge != 18 || userParams.MaxAge != 99)
             {
                 var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
@@ -122,7 +123,8 @@ namespace DatingApp.API.Services
         }
 
         // Get user by Id for normal user
-        public async Task<UserDetailsResponse> GetById(int id)
+        //public async Task<UserDetailsResponse> GetById(int id)
+        public async Task<User> GetById(int id)
         {
             var user = await GetUser(id);
             if (user.Role == Role.Admin)
@@ -130,7 +132,8 @@ namespace DatingApp.API.Services
                 throw new KeyNotFoundException("User not found");
             }
 
-            return _mapper.Map<UserDetailsResponse>(user);
+            //return _mapper.Map<UserDetailsResponse>(user);          
+            return user;
         }
 
         // Update user info
@@ -225,6 +228,12 @@ namespace DatingApp.API.Services
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
+        }
+
+        // Get the ids of users with role admin
+        public List<int> GetAdminIds()
+        {
+            return _context.Users.Where(u => u.Role == Role.Admin).Select(u => u.Id).ToList();
         }
     }
 }

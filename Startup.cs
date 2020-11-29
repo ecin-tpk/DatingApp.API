@@ -6,6 +6,7 @@ using DatingApp.API.Middleware;
 using DatingApp.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,7 @@ namespace DatingApp.API
             services.AddScoped<ILikeService, LikeService>();
 
             services.AddSignalR();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,7 +61,7 @@ namespace DatingApp.API
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<MessagesHub>("/hubs/messages");
-                endpoints.MapHub<ReportsHub>("/hubs/reports");
+                endpoints.MapHub<NotificationHub>("/hubs/notification");
             });
         }
     }

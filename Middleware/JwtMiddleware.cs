@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using DatingApp.API.Helpers;
@@ -27,9 +29,16 @@ namespace DatingApp.API.Middleware
         {
             var token = httpContext.Request.Headers["Authorization"].FirstOrDefault();
 
-            if(token != null && token.StartsWith("Bearer") && token?.Split(" ").Last() != null)
+            var test = httpContext.Request.Query["access_token"];
+
+            if (token != null && token.StartsWith("Bearer") && token?.Split(" ").Last() != null)
             {
                 await AttachUserToContext(httpContext, dataContext, token?.Split(" ").Last());
+            }
+
+            if (test.ToString() != null)
+            {
+                await AttachUserToContext(httpContext, dataContext, test);
             }
 
             await _next(httpContext);
@@ -65,6 +74,10 @@ namespace DatingApp.API.Middleware
                 await dataContext.SaveChangesAsync();
 
                 httpContext.Items["User"] = user;
+
+                httpContext.User.Identities.FirstOrDefault().AddClaim(
+                    new Claim("user_id", user.Id.ToString())
+                );
             }
             catch { }
         }

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
+using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Hubs;
 using DatingApp.API.Models.Reports;
 using DatingApp.API.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -15,18 +12,20 @@ namespace DatingApp.API.Controllers
 {
     [ApiController]
     [Route("api/users/{userId}/[controller]")]
-    //[Authorize]
+    [Authorize]
     public class ReportsController : BaseController
     {
         private readonly IMapper _mapper;
         private readonly IReportService _reportService;
-        private readonly IHubContext<ReportsHub, IReportClient> _reportsHub;
+        private readonly IUserService _userService;
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
-        public ReportsController(IMapper mapper, IReportService reportService, IHubContext<ReportsHub, IReportClient> reportsHub)
+        public ReportsController(IMapper mapper, IReportService reportService, IUserService userService, IHubContext<NotificationHub> notificationHub)
         {
             _mapper = mapper;
             _reportService = reportService;
-            _reportsHub = reportsHub;
+            _userService = userService;
+            _notificationHub = notificationHub;
         }
 
         //// GET: Get message by id
@@ -51,9 +50,12 @@ namespace DatingApp.API.Controllers
                 return Unauthorized(new { message = "Unauthorized" });
             }
 
-            await _reportService.Create(userId, model);
+            var report = await _reportService.Create(userId, model);
 
-            await _reportsHub.Clients.All.ReceiveReport(model);
+            foreach (var id in _userService.GetAdminIds())
+            {
+                await _notificationHub.Clients.User(id.ToString()).SendAsync("ReceiveNotification", report);
+            }
 
             return Ok("User reported successfully");
         }

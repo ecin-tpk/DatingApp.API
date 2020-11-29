@@ -1,4 +1,5 @@
-﻿    using System;
+﻿using DatingApp.API.Models.Messages;
+using System;
 namespace DatingApp.API.Entities
 {
     public class Message
@@ -14,5 +15,6 @@ namespace DatingApp.API.Entities
         public DateTime MessageSent { get; set; }
         public bool SenderDeleted { get; set; }
         public bool RecipientDeleted { get; set; }
+        public MessageType Type { get; set; }
     }
 }

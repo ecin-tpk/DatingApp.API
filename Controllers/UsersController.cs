@@ -8,6 +8,7 @@ using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
 using Microsoft.AspNetCore.Mvc;
+using DatingApp.API.Models.Account;
 
 namespace DatingApp.API.Controllers
 {
@@ -33,28 +34,32 @@ namespace DatingApp.API.Controllers
             userParams.Name = null;
             userParams.OrderBy = null;
             userParams.Status = Status.Active;
-            userParams.Likees = false;
-            userParams.Likers = false;
 
             var users = await _userService.GetPagination(userParams);
 
             Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
-            if (userParams.IsMatched)
+            if (userParams.IsMatched || userParams.Likers)
             {
-                return Ok(_mapper.Map<IEnumerable<MatchedUserResponse>>(users));
+                return Ok(_mapper.Map<IEnumerable<SimpleUserResponse>>(users));
             }
+
 
             return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
         }
 
         // GET: Get a specific user by id
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<UserDetailsResponse>> GetById(int id)
+        public async Task<ActionResult> GetById(int id)
         {
             var user = await _userService.GetById(id);
 
-            return Ok(user);
+            if (User.Id == id)
+            {
+                return Ok(_mapper.Map<LoginResponse>(user));
+            }
+
+            return Ok(_mapper.Map<UserDetailsResponse>(user));
         }
 
         // PUT: Update user details

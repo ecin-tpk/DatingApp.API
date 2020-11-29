@@ -10,7 +10,7 @@ namespace DatingApp.API.Services
     #region Interface
     public interface ILikeService
     {
-        Task LikeUser(int userId, int recipientId);
+        Task LikeUser(int userId, int recipientId, bool super);
         Task<Like> GetLike(int userId, int recipientId);
         Task<bool> AreMatched(int firstUserId, int secondUserId);
         Task<IEnumerable<int>> GetUserLikes(int id, bool likers);
@@ -28,7 +28,7 @@ namespace DatingApp.API.Services
         }
 
         // Like a user
-        public async Task LikeUser(int userId, int recipientId)
+        public async Task LikeUser(int userId, int recipientId, bool super)
         {
             if (userId == recipientId)
             {
@@ -47,7 +47,8 @@ namespace DatingApp.API.Services
             var like = new Like
             {
                 LikerId = userId,
-                LikeeId = recipientId
+                LikeeId = recipientId,
+                Super = super
             };
 
             _context.Add(like);

@@ -10,7 +10,6 @@
     <Folder Include="Middleware\" />
     <Folder Include="Entities\" />
     <Folder Include="Models\Account\" />
-    <Folder Include="Models\Users\" />
     <Folder Include="Models\Photos\" />
     <Folder Include="Helpers\RequestParams\" />
     <Folder Include="Helpers\Attributes\" />

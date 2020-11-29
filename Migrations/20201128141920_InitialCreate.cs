@@ -90,7 +90,8 @@ namespace DatingApp.API.Migrations
                 columns: table => new
                 {
                     LikerId = table.Column<int>(nullable: false),
-                    LikeeId = table.Column<int>(nullable: false)
+                    LikeeId = table.Column<int>(nullable: false),
+                    Super = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -122,7 +123,8 @@ namespace DatingApp.API.Migrations
                     DateRead = table.Column<DateTime>(nullable: true),
                     MessageSent = table.Column<DateTime>(nullable: false),
                     SenderDeleted = table.Column<bool>(nullable: false),
-                    RecipientDeleted = table.Column<bool>(nullable: false)
+                    RecipientDeleted = table.Column<bool>(nullable: false),
+                    Type = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

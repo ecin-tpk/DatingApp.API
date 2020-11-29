@@ -6,5 +6,6 @@
         public int LikeeId { get; set; }
         public User Liker { get; set; }
         public User Likee { get; set; }
+        public bool Super { get; set; }
     }
 }

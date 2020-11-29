@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatingApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20201113134855_InitialCreate")]
+    [Migration("20201128141920_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,9 @@ namespace DatingApp.API.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("LikeeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Super")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("LikerId", "LikeeId");
@@ -62,6 +65,9 @@ namespace DatingApp.API.Migrations
 
                     b.Property<int>("SenderId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
