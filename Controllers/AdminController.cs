@@ -112,6 +112,16 @@ namespace DatingApp.API.Controllers
             return Ok("Report deleted successfully");
         }
 
+        //// POST: Create new interest subject
+        //[HttpPost("/interests")]
+        //[Authorize(Role.Admin)]
+        //public async Task<IActionResult> CreateInterestSubject(int id)
+        //{
+        //    await _interestService.Create(id);
+
+        //    return Ok("Report deleted successfully");
+        //}
+
         // Helpers
         // Get IP address
         private string IpAddress()

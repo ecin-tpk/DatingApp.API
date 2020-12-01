@@ -24,7 +24,6 @@ namespace DatingApp.API.Entities
             
         public string Name { get; set; }
         public string Gender { get; set; }
-        public string Interests { get; set; }
         public string LookingFor { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public DateTime LastActive { get; set; }
@@ -50,6 +49,7 @@ namespace DatingApp.API.Entities
 
         public List<RefreshToken> RefreshTokens { get; set; }
         public ICollection<Photo> Photos { get; set; }
+        public ICollection<Interest> Activities { get; set; }
         public ICollection<Like> Likers { get; set; }
         public ICollection<Like> Likees { get; set; }
         public ICollection<Message> MessagesSent { get; set; }
@@ -57,7 +57,7 @@ namespace DatingApp.API.Entities
 
         public bool OwnsToken(string token)
         {
-            return this.RefreshTokens?.Find(t => t.Token == token) != null;
+            return RefreshTokens?.Find(t => t.Token == token) != null;
         }
     }
 }

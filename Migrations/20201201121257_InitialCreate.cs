@@ -8,6 +8,19 @@ namespace DatingApp.API.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Activities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Label = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Activities", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Reports",
                 columns: table => new
                 {
@@ -45,7 +58,6 @@ namespace DatingApp.API.Migrations
                     Updated = table.Column<DateTime>(nullable: true),
                     Name = table.Column<string>(nullable: true),
                     Gender = table.Column<string>(nullable: true),
-                    Interests = table.Column<string>(nullable: true),
                     LookingFor = table.Column<string>(nullable: true),
                     DateOfBirth = table.Column<DateTime>(nullable: true),
                     LastActive = table.Column<DateTime>(nullable: false),
@@ -83,6 +95,30 @@ namespace DatingApp.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Values", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Interests",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(nullable: false),
+                    ActivityId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Interests", x => new { x.UserId, x.ActivityId });
+                    table.ForeignKey(
+                        name: "FK_Interests_Activities_ActivityId",
+                        column: x => x.ActivityId,
+                        principalTable: "Activities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Interests_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -124,7 +160,7 @@ namespace DatingApp.API.Migrations
                     MessageSent = table.Column<DateTime>(nullable: false),
                     SenderDeleted = table.Column<bool>(nullable: false),
                     RecipientDeleted = table.Column<bool>(nullable: false),
-                    Type = table.Column<string>(nullable: true)
+                    Type = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -195,6 +231,11 @@ namespace DatingApp.API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Interests_ActivityId",
+                table: "Interests",
+                column: "ActivityId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Likes_LikeeId",
                 table: "Likes",
                 column: "LikeeId");
@@ -223,6 +264,9 @@ namespace DatingApp.API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Interests");
+
+            migrationBuilder.DropTable(
                 name: "Likes");
 
             migrationBuilder.DropTable(
@@ -239,6 +283,9 @@ namespace DatingApp.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Values");
+
+            migrationBuilder.DropTable(
+                name: "Activities");
 
             migrationBuilder.DropTable(
                 name: "Users");

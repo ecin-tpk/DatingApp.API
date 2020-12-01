@@ -29,7 +29,7 @@ namespace DatingApp.API.Models.Users
         public string Interests { get; set; }
         public string LookingFor { get; set; }
 
-        [ValidDateOfBirth]
+        [ValidDateOfBirth(ErrorMessage ="User age must be greater than or equal to 18")]
         public DateTime? DateOfBirth { get; set; }
 
         public string Location { get; set; }

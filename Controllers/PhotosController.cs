@@ -43,6 +43,21 @@ namespace DatingApp.API.Controllers
             return CreatedAtRoute("GetPhotoById", new { userId, id = photo.Id }, photo);
         }
 
+        // POST: Save photo url
+        [HttpPost]
+        public async Task<IActionResult> Create(int userId, [FromForm] UploadRequest model)
+        {
+            // Users can upload their own photo and admins can update any user's photo
+            if (userId != User.Id && User.Role != Role.Admin)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
+
+            var photo = await _photoService.Upload(userId, model);
+
+            return CreatedAtRoute("GetPhotoById", new { userId, id = photo.Id }, photo);
+        }
+
         // POST: Set as main photo
         [HttpPost("{id}/set-main")]
         public async Task<IActionResult> SetMainPhoto(int userId, int id)

@@ -16,6 +16,35 @@ namespace DatingApp.API.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.7");
 
+            modelBuilder.Entity("DatingApp.API.Entities.Activity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Label")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Activities");
+                });
+
+            modelBuilder.Entity("DatingApp.API.Entities.Interest", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ActivityId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserId", "ActivityId");
+
+                    b.HasIndex("ActivityId");
+
+                    b.ToTable("Interests");
+                });
+
             modelBuilder.Entity("DatingApp.API.Entities.Like", b =>
                 {
                     b.Property<int>("LikerId")
@@ -64,8 +93,8 @@ namespace DatingApp.API.Migrations
                     b.Property<int>("SenderId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Type")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -178,9 +207,6 @@ namespace DatingApp.API.Migrations
                     b.Property<bool>("HideAge")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Interests")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("JobTitle")
                         .HasColumnType("TEXT");
 
@@ -264,6 +290,21 @@ namespace DatingApp.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Values");
+                });
+
+            modelBuilder.Entity("DatingApp.API.Entities.Interest", b =>
+                {
+                    b.HasOne("DatingApp.API.Entities.Activity", "Activity")
+                        .WithMany("Users")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DatingApp.API.Entities.User", "User")
+                        .WithMany("Activities")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DatingApp.API.Entities.Like", b =>

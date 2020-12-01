@@ -27,6 +27,18 @@ namespace DatingApp.API.Data
 
                 context.SaveChanges();
             }
+
+            if (!context.Activities.Any())
+            {
+                var activityData = System.IO.File.ReadAllText("Data/ActivitySeedData.json");
+                var activities = JsonConvert.DeserializeObject<List<Activity>>(activityData);
+                foreach (var activity in activities)
+                {
+                    context.Activities.Add(activity);
+                }
+
+                context.SaveChanges();
+            }
         }
 
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

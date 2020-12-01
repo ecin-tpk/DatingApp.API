@@ -30,18 +30,17 @@ namespace DatingApp.API.Services
         // Like a user
         public async Task LikeUser(int userId, int recipientId, bool super)
         {
+            if (await _context.Users.SingleOrDefaultAsync(u => u.Id == recipientId) == null)
+            {
+                throw new AppException("Recipient not found");
+            }
             if (userId == recipientId)
             {
                 throw new AppException("Yes, I love myself too");
             }
-
             if (await GetLike(userId, recipientId) != null)
             {
                 throw new AppException("You already liked this user");
-            }
-            if (await _context.Users.SingleOrDefaultAsync(u => u.Id == recipientId) == null)
-            {
-                throw new AppException("User not found");
             }
 
             var like = new Like

@@ -16,6 +16,7 @@ namespace DatingApp.API.Services
     public interface IPhotoService
     {
         Task<Photo> GetById(int id);
+        Task<PhotoResponse> Create(int userId, string photoUrl);
         Task<PhotoResponse> Upload(int userId, UploadRequest model);
         Task SetMain(int userId, int photoId);
         Task Delete(int userId, int photoId);
@@ -47,6 +48,13 @@ namespace DatingApp.API.Services
             return await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        // Save photo url
+        public Task<PhotoResponse> Create(int userId, string photoUrl)
+        {
+
+            throw new NotImplementedException();
+        }
+
         // Upload image to Cloudinary
         public async Task<PhotoResponse> Upload(int userId, UploadRequest model)
         {
@@ -55,20 +63,25 @@ namespace DatingApp.API.Services
             var uploadResult = new ImageUploadResult();
 
             var file = model.File;
-            using (var stream = file.OpenReadStream())
+            if(file.Length > 0)
             {
-                var uploadParams = new ImageUploadParams()
+                using (var stream = file.OpenReadStream())
                 {
-                    File = new FileDescription(file.Name, stream),
-                    Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
-                };
+                    var uploadParams = new ImageUploadParams()
+                    {
+                        File = new FileDescription(file.Name, stream),
+                        Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
+                    };
 
-                uploadResult = _cloudinary.Upload(uploadParams);
+                    uploadResult = _cloudinary.Upload(uploadParams);
+                }
             }
 
-
-            model.Url = uploadResult.Url.ToString();
-            model.PublicId = uploadResult.PublicId;
+            if(uploadResult.Url != null)
+            {
+                model.Url = uploadResult.Url.ToString();
+                model.PublicId = uploadResult.PublicId;
+            }
 
             var photo = _mapper.Map<Photo>(model);
 
@@ -155,5 +168,7 @@ namespace DatingApp.API.Services
         {
             return await _context.Photos.Where(u => u.UserId == userId).SingleOrDefaultAsync(p => p.IsMain);
         }
+
+
     }
 }

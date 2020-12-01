@@ -3,6 +3,7 @@ using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Models.Account;
 using DatingApp.API.Models.Admin;
+using DatingApp.API.Models.Interests;
 using DatingApp.API.Models.Messages;
 using DatingApp.API.Models.Photos;
 using DatingApp.API.Models.Reports;
@@ -71,6 +72,8 @@ namespace DatingApp.API.Helpers
                 );
 
             CreateMap<NewReportRequest, Report>().ReverseMap();
+
+            CreateMap<Activity, InterestResponse>();
         }
     }
 }

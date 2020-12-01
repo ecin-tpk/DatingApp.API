@@ -6,9 +6,7 @@
 
 
   <ItemGroup>
-    <Folder Include="Data\" />
     <Folder Include="Middleware\" />
-    <Folder Include="Entities\" />
     <Folder Include="Models\Account\" />
     <Folder Include="Models\Photos\" />
     <Folder Include="Helpers\RequestParams\" />

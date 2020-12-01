@@ -41,6 +41,7 @@ namespace DatingApp.API
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<ILikeService, LikeService>();
+            services.AddScoped<IInterestService, InterestService>();
 
             services.AddSignalR();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
