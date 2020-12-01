@@ -9,7 +9,7 @@ namespace DatingApp.API.Models.Users
         public int Id { get; set; }
         public string Name { get; set; }
         public string Gender { get; set; }
-        public string Interests { get; set; }
+        //public string Interests { get; set; }
         public DateTime DateOfBirth { get; set; }
         public DateTime LastActive { get; set; }
         public string Location { get; set; }
