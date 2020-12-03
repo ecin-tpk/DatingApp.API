@@ -16,7 +16,8 @@ namespace DatingApp.API.Services
     public interface IPhotoService
     {
         Task<Photo> GetById(int id);
-        Task<PhotoResponse> Create(int userId, string photoUrl);
+        Task<PhotoResponse> SavePhotoUrl(int userId, UploadRequest model);
+        Task ChangeOrder(int photoId, byte order);
         Task<PhotoResponse> Upload(int userId, UploadRequest model);
         Task SetMain(int userId, int photoId);
         Task Delete(int userId, int photoId);
@@ -49,16 +50,50 @@ namespace DatingApp.API.Services
         }
 
         // Save photo url
-        public Task<PhotoResponse> Create(int userId, string photoUrl)
+        public async Task<PhotoResponse> SavePhotoUrl(int userId, UploadRequest model)
         {
+            var userInDb = await _userService.GetUser(userId);
+            if (userInDb.Photos.Count == 9)
+            {
+                throw new AppException("You cannot have more than 9 photos");
+            }
 
-            throw new NotImplementedException();
+            var photo = _mapper.Map<Photo>(model);
+            photo.Order = Convert.ToByte(userInDb.Photos.Count);
+            if (!userInDb.Photos.Any(u => u.IsMain))
+            {
+                photo.IsMain = true;
+            }
+
+            userInDb.Photos.Add(photo);
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                return _mapper.Map<PhotoResponse>(photo);
+            }
+
+            throw new AppException("Save photo url failed");
+        }
+
+        // Change photo order
+        public async Task ChangeOrder(int photoId, byte order)
+        {
+            var photoInDb = await _context.Photos.SingleOrDefaultAsync(p => p.Id == photoId);
+            photoInDb.Order = order;
+
+            _context.Photos.Update(photoInDb);
+
+            await _context.SaveChangesAsync();
         }
 
         // Upload image to Cloudinary
         public async Task<PhotoResponse> Upload(int userId, UploadRequest model)
         {
             var userInDb = await _userService.GetUser(userId);
+            if (userInDb.Photos.Count == 9)
+            {
+                throw new AppException("You cannot have more than 9 photos");
+            }
 
             var uploadResult = new ImageUploadResult();
 

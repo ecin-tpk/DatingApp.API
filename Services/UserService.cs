@@ -131,6 +131,7 @@ namespace DatingApp.API.Services
             {
                 throw new KeyNotFoundException("User not found");
             }
+            user.Photos = user.Photos.OrderBy(p => p.Order).ToList();
 
             //return _mapper.Map<UserDetailsResponse>(user);          
             return user;

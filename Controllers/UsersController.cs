@@ -64,7 +64,7 @@ namespace DatingApp.API.Controllers
 
         // PUT: Update user details
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<UserResponse>> Update(int id, UpdateRequest model)
+        public async Task<ActionResult<UserResponse>> Update(int id, [FromBody]UpdateRequest model)
         {
             // Users can update their own data and admins can update any user's data
             if (id != User.Id && User.Role != Role.Admin)
