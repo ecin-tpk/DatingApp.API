@@ -14,6 +14,7 @@ namespace DatingApp.API.Helpers.RequestParams
         public bool Likees { get; set; } = false;
         public bool Likers { get; set; } = false;
         public bool IsMatched { get; set; }
+        public bool TopPicks { get; set; }
 
         public string OrderBy { get; set; }
         public string Verification { get; set; }

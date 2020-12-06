@@ -8,5 +8,6 @@ namespace DatingApp.API.Models.Users
         public string Name { get; set; }
         public DateTime LastActive { get; set; }
         public string PhotoUrl { get; set; }
+        public string Gender { get; set; }
     }
 }

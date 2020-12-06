@@ -7,7 +7,6 @@ using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Helpers.RequestParams;
 using DatingApp.API.Models.Account;
 using DatingApp.API.Models.Admin;
-using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
 using DeviceDetectorNET;
 using Microsoft.AspNetCore.Mvc;
@@ -80,7 +79,7 @@ namespace DatingApp.API.Controllers
             return Ok(countByStatus);
         }
 
-        // GET: Get number of users by status
+        // GET: Get number of new users per month
         [HttpGet("users/new-users-per-month/{year:int}")]
         [Authorize(Role.Admin)]
         public async Task<IActionResult> GetNewUsersPerMonth(int year)
@@ -88,6 +87,16 @@ namespace DatingApp.API.Controllers
             var newUsersPerMonth = await _userService.GetNewUsersPerMonth(year);
 
             return Ok(newUsersPerMonth);
+        }
+
+        // GET: Get total users
+        [HttpGet("users/users-per-month/{year:int}")]
+        [Authorize(Role.Admin)]
+        public async Task<IActionResult> GetTotalUsersPerMonth(int year)
+        {
+            var usersPerMonth = await _userService.GetTotalUsersPerMonth(year);
+
+            return Ok(usersPerMonth);
         }
 
         // GET: Get user reports (paginated)

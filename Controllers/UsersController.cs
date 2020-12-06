@@ -39,7 +39,7 @@ namespace DatingApp.API.Controllers
 
             Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
-            if (userParams.IsMatched || userParams.Likers)
+            if (userParams.IsMatched || userParams.Likers || userParams.TopPicks)
             {
                 return Ok(_mapper.Map<IEnumerable<SimpleUserResponse>>(users));
             }

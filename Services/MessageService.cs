@@ -183,7 +183,7 @@ namespace DatingApp.API.Services
 
         // Helpers
 
-        // Sort messages
+        // Filter messages
         private IQueryable<Message> FilterMessages(IQueryable<Message> messages, MessageParams messageParams)
         {
             switch (messageParams.MessageContainer)

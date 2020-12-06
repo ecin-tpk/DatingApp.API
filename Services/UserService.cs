@@ -25,6 +25,7 @@ namespace DatingApp.API.Services
         Task<int[]> GetNumberOfUsersByStatus();
         Task<UserResponse> Create(NewUserRequest model);
         Task<int[]> GetNewUsersPerMonth(int year);
+        Task<int[]> GetTotalUsersPerMonth(int year);
         List<int> GetAdminIds();
     }
     #endregion
@@ -51,6 +52,8 @@ namespace DatingApp.API.Services
                 u.Role != Role.Admin
             );
             users = users.Where(u => u.Status == userParams.Status);
+
+
 
             if (userParams.IsMatched)
             {
@@ -90,34 +93,15 @@ namespace DatingApp.API.Services
 
                 users = users.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
             }
-
-            switch (userParams.OrderBy)
+            if (userParams.TopPicks)
             {
-                case "name":
-                    users = users.OrderBy(u => u.Name);
-                    break;
-                case "gender":
-                    users = users.OrderByDescending(u => u.Gender);
-                    break;
-                case "age":
-                    users = users.OrderByDescending(u => u.DateOfBirth);
-                    break;
-                case "email":
-                    users = users.OrderByDescending(u => u.Email);
-                    break;
-                case "phone":
-                    users = users.OrderByDescending(u => u.Phone);
-                    break;
-                case "created":
-                    users = users.OrderByDescending(u => u.Created);
-                    break;
-                case "verification":
-                    users = users.OrderByDescending(u => u.Verified.HasValue);
-                    break;
-                default:
-                    users = users.OrderByDescending(u => u.LastActive);
-                    break;
+                var userLikees = await _likeService.GetUserLikes(userParams.UserId, false);
+
+                users = users.Where(u => !userLikees.Contains(u.Id)).Include(u => u.Likers).OrderByDescending(u => u.Likers.Count());
             }
+
+            // Sort users (normal users get a list that is ordered by lastActive by default, admin can sort by other fields)
+            users = Sort(users, userParams);
 
             return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
         }
@@ -189,14 +173,37 @@ namespace DatingApp.API.Services
         {
             var users = _context.Users.Where(u => u.Created.Year == year);
 
-            var newUsersPerMonth = new int[12];
+            var latestMonth = await users.OrderByDescending(u => u.Created).Select(u => u.Created.Month).FirstOrDefaultAsync();
 
-            for (int i = 0; i < 12; i++)
+            var newUsersPerMonth = new int[latestMonth];
+
+            for (int i = 0; i < latestMonth; i++)
             {
                 newUsersPerMonth[i] = await users.Where(u => u.Created.Month == i + 1).CountAsync();
             }
 
             return newUsersPerMonth;
+        }
+
+        // Get number of new users permonth
+        public async Task<int[]> GetTotalUsersPerMonth(int year)
+        {
+            var users = _context.Users.Where(u => u.Created.Year <= year);
+
+            var latestMonth = await users.OrderByDescending(u => u.Created).Select(u => u.Created.Month).FirstOrDefaultAsync();
+
+            var totalUsers = new int[latestMonth];
+
+            var total = 0;
+
+            for (int i = 0; i < latestMonth; i++)
+            {
+                totalUsers[i] = await users.Where(u => u.Created.Month == i + 1).CountAsync() + total;
+
+                total += await users.Where(u => u.Created.Month == i + 1).CountAsync();
+            }
+
+            return totalUsers;
         }
 
         // Create new user (admin)
@@ -219,6 +226,42 @@ namespace DatingApp.API.Services
             await _context.SaveChangesAsync();
 
             return _mapper.Map<UserResponse>(user);
+        }
+
+        // Helpers
+
+        // Sort result
+        private IQueryable<User> Sort(IQueryable<User> users, UserParams userParams)
+        {
+            switch (userParams.OrderBy)
+            {
+                case "name":
+                    users = users.OrderBy(u => u.Name);
+                    break;
+                case "gender":
+                    users = users.OrderByDescending(u => u.Gender);
+                    break;
+                case "age":
+                    users = users.OrderByDescending(u => u.DateOfBirth);
+                    break;
+                case "email":
+                    users = users.OrderByDescending(u => u.Email);
+                    break;
+                case "phone":
+                    users = users.OrderByDescending(u => u.Phone);
+                    break;
+                case "created":
+                    users = users.OrderByDescending(u => u.Created);
+                    break;
+                case "verification":
+                    users = users.OrderByDescending(u => u.Verified.HasValue);
+                    break;
+                default:
+                    users = users.OrderByDescending(u => u.LastActive);
+                    break;
+            }
+
+            return users;
         }
 
         // Hash password
