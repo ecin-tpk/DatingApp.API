@@ -96,6 +96,7 @@ namespace DatingApp.API.Services
                 if (user.Role != Role.Admin && model.Role == Role.Admin)
                 {
                     throw new AppException("Not eligible");
+
                 }
                 if (!user.IsVerified)
                 {
@@ -126,9 +127,9 @@ namespace DatingApp.API.Services
 
                 return response;
             }
-            catch
+            catch(Exception ex)
             {
-                throw new AppException("Email or password is incorrect");
+                throw ex;
             }
         }
 

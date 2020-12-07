@@ -102,10 +102,10 @@ namespace DatingApp.API.Services
                 .SingleOrDefaultAsync(u => u.Id == userId);
 
             // Find id of users that i liked
-            var likees = user.Likers.Where(u => u.LikeeId == userId).Select(l => l.LikerId).ToList();
+            var likees = user.Likers.Where(u => u.LikeeId == userId).Select(l => l.LikerId);
 
             // Find id of users that liked me
-            var likers = user.Likees.Where(u => u.LikerId == userId).Select(l => l.LikeeId).ToList();
+            var likers = user.Likees.Where(u => u.LikerId == userId).Select(l => l.LikeeId);
 
             // Matched users are who liked me and i already liked them
             var matchedUsers = likees.Where(i => likers.Contains(i));

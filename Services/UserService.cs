@@ -76,9 +76,11 @@ namespace DatingApp.API.Services
             }
             if (userParams.Likers)
             {
-                var userLikers = await _likeService.GetUserLikes(userParams.UserId, true);
+                var likers = await _likeService.GetUserLikes(userParams.UserId, true);
+                var matched = await _likeService.GetMatched(userParams.UserId);
+                var notMatched = likers.Where(i => !matched.Contains(i));
 
-                users = users.Where(u => userLikers.Contains(u.Id));
+                users = users.Where(u => notMatched.Contains(u.Id));
             }
             if (userParams.Likees)
             {
