@@ -34,6 +34,7 @@ namespace DatingApp.API.Controllers
             userParams.Name = null;
             userParams.OrderBy = null;
             userParams.Status = Status.Active;
+            userParams.ForAdmin = false;
 
             var users = await _userService.GetPagination(userParams);
 

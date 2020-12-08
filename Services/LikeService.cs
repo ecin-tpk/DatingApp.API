@@ -15,6 +15,7 @@ namespace DatingApp.API.Services
         Task<bool> AreMatched(int firstUserId, int secondUserId);
         Task<IEnumerable<int>> GetUserLikes(int id, bool likers);
         Task<IEnumerable<int>> GetMatched(int userId);
+        Task<IEnumerable<int>> GetLikedButNotMatched(int userId);
         Task Unmatch(int userId, int recipientId);
     }
     #endregion
@@ -83,7 +84,7 @@ namespace DatingApp.API.Services
                 .Include(u => u.Likees)
                 .SingleOrDefaultAsync(u => u.Id == id);
 
-            // Get likers = true, return list of userId that i liked, otherwise return list of userId that like me
+            // If likers = true, return list of userId that i liked, otherwise return list of userId that like me
             if (likers)
             {
                 return user.Likers.Where(u => u.LikeeId == id).Select(i => i.LikerId);
@@ -123,6 +124,14 @@ namespace DatingApp.API.Services
             }
 
 
+        }
+
+        // Liked but not matched
+        public async Task<IEnumerable<int>> GetLikedButNotMatched(int userId)
+        {
+            var likees = await GetUserLikes(userId, false);
+            var matched = await GetMatched(userId);
+            return likees.Where(i => !matched.Contains(i));
         }
     }
 }

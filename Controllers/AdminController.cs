@@ -51,6 +51,7 @@ namespace DatingApp.API.Controllers
         public async Task<IActionResult> GetPagination([FromQuery] UserParams userParams)
         {
             userParams.UserId = User.Id;
+            userParams.ForAdmin = true;
 
             var users = await _userService.GetPagination(userParams);
 

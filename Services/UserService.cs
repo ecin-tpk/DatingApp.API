@@ -47,19 +47,22 @@ namespace DatingApp.API.Services
         public async Task<PagedList<User>> GetPagination(UserParams userParams)
         {
             var users = _context.Users.Include(u => u.Photos)
-                .Include(u => u.Activities)
-                .ThenInclude(u => u.Activity)
                 .Where(u =>
                     u.Id != userParams.UserId &&
                     u.Role != Role.Admin &&
                     u.Status == userParams.Status)
                 .AsQueryable();
 
+            if (userParams.ForCards)
+            {
+                users = await GetUsersForCards(users, userParams);
+
+                return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
+            }
             if (userParams.IsMatched)
             {
                 var matched = await _likeService.GetMatched(userParams.UserId);
                 users = users.Where(u => matched.Contains(u.Id));
-                users = Sort(users, userParams);
 
                 return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
@@ -88,34 +91,23 @@ namespace DatingApp.API.Services
                 return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
 
-            if (!string.IsNullOrEmpty(userParams.Name))
-            {
-                users = users.Where(u => u.Name.ToLower().Contains(userParams.Name));
-            }
-            if (!string.IsNullOrEmpty(userParams.Verification))
-            {
-                users = users.Where(u => userParams.Verification == "true" ? u.Verified.HasValue : !u.Verified.HasValue);
-            }
-
-            if (userParams.Gender == "male" || userParams.Gender == "female")
-            {
-                users = users.Where(u => u.Gender == userParams.Gender);
-            }
-            if (userParams.MinAge != 18 || userParams.MaxAge != 99)
-            {
-                var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
-                var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
-
-                users = users.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
-            }
             if (userParams.TopPicks)
             {
                 var userLikees = await _likeService.GetUserLikes(userParams.UserId, false);
-                users = users.Where(u => !userLikees.Contains(u.Id)).Include(u => u.Likers).OrderByDescending(u => u.Likers.Count());
+                users = users.Where(u => !userLikees.Contains(u.Id))
+                    .Include(u => u.Likers)
+                    .OrderByDescending(u => u.Likers.Count());
+
+                return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
 
-            // Sort users (normal users get a list that is ordered by lastActive by default, admin can sort by other fields)
-            users = Sort(users, userParams);
+            // Admin area
+            if (userParams.ForAdmin)
+            {
+                users = GetUsersForAdmin(users, userParams);
+
+                return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
+            }
 
             return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
         }
@@ -242,7 +234,64 @@ namespace DatingApp.API.Services
             return _mapper.Map<UserResponse>(user);
         }
 
+        // Get the ids of users with role admin
+        public List<int> GetAdminIds()
+        {
+            return _context.Users.Where(u => u.Role == Role.Admin).Select(u => u.Id).ToList();
+        }
+
         // Helpers
+
+        // Get users for card stack
+        private async Task<IQueryable<User>> GetUsersForCards(IQueryable<User> users, UserParams userParams)
+        {
+            // Don't show profiles that i liked
+            var liked = await _likeService.GetUserLikes(userParams.UserId, false);
+            users = users.Include(u => u.Activities)
+                .ThenInclude(u => u.Activity)
+                .Where(u => !liked.Contains(u.Id));
+
+            if (userParams.Gender == "male" || userParams.Gender == "female")
+            {
+                users = users.Where(u => u.Gender == userParams.Gender);
+            }
+            if (userParams.MinAge != 18 || userParams.MaxAge != 99)
+            {
+                var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+                var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
+
+                users = users.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
+            }
+
+            return users.OrderBy(u => u.Created);
+        }
+
+        // Get users for admin
+        private IQueryable<User> GetUsersForAdmin(IQueryable<User> users, UserParams userParams)
+        {
+            if (!string.IsNullOrEmpty(userParams.Name))
+            {
+                users = users.Where(u => u.Name.ToLower().Contains(userParams.Name));
+            }
+            if (!string.IsNullOrEmpty(userParams.Verification))
+            {
+                users = users.Where(u => userParams.Verification == "true" ? u.Verified.HasValue : !u.Verified.HasValue);
+            }
+
+            if (userParams.Gender == "male" || userParams.Gender == "female")
+            {
+                users = users.Where(u => u.Gender == userParams.Gender);
+            }
+            if (userParams.MinAge != 18 || userParams.MaxAge != 99)
+            {
+                var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+                var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
+
+                users = users.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
+            }
+
+            return Sort(users, userParams);
+        }
 
         // Sort result
         private IQueryable<User> Sort(IQueryable<User> users, UserParams userParams)
@@ -271,7 +320,7 @@ namespace DatingApp.API.Services
                     users = users.OrderByDescending(u => u.Verified.HasValue);
                     break;
                 default:
-                    users = users.OrderByDescending(u => u.LastActive);
+                    users = users.OrderBy(u => u.Created);
                     break;
             }
 
@@ -286,12 +335,6 @@ namespace DatingApp.API.Services
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
-        }
-
-        // Get the ids of users with role admin
-        public List<int> GetAdminIds()
-        {
-            return _context.Users.Where(u => u.Role == Role.Admin).Select(u => u.Id).ToList();
         }
     }
 }
