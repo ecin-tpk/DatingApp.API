@@ -74,6 +74,7 @@ namespace DatingApp.API.Helpers
             CreateMap<NewReportRequest, Report>().ReverseMap();
 
             CreateMap<Activity, InterestResponse>();
+            CreateMap<Interest, InterestForCardResponse>();
         }
     }
 }

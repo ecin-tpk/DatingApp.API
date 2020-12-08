@@ -98,7 +98,7 @@ namespace DatingApp.API.Services
             var uploadResult = new ImageUploadResult();
 
             var file = model.File;
-            if(file.Length > 0)
+            if (file.Length > 0)
             {
                 using (var stream = file.OpenReadStream())
                 {
@@ -112,7 +112,7 @@ namespace DatingApp.API.Services
                 }
             }
 
-            if(uploadResult.Url != null)
+            if (uploadResult.Url != null)
             {
                 model.Url = uploadResult.Url.ToString();
                 model.PublicId = uploadResult.PublicId;
@@ -183,17 +183,16 @@ namespace DatingApp.API.Services
             {
                 var deleteParams = new DeletionParams(photoInDb.PublicID);
 
-                var result = _cloudinary.Destroy(deleteParams);
+                _cloudinary.Destroy(deleteParams);
 
-                if (result.Result == "ok")
-                {
-                    _context.Remove(photoInDb);
-                }
+                //var result = _cloudinary.Destroy(deleteParams);
+                //if (result.Result != "ok")
+                //{
+                //    _context.Remove(photoInDb);
+                //}
             }
-            else
-            {
-                _context.Remove(photoInDb);
-            }
+
+            _context.Remove(photoInDb);
 
             await _context.SaveChangesAsync();
         }

@@ -1,4 +1,6 @@
-﻿namespace DatingApp.API.Entities
+﻿using System;
+
+namespace DatingApp.API.Entities
 {
     public class Like
     {

@@ -36,7 +36,7 @@ namespace DatingApp.API.Controllers
         {
             if (model.File.Length == 0)
             {
-                throw new AppException("The field Order is required");
+                throw new AppException("No file selected");
             }
 
             // Users can upload their own photo and admins can update any user's photo

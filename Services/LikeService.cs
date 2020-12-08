@@ -15,6 +15,7 @@ namespace DatingApp.API.Services
         Task<bool> AreMatched(int firstUserId, int secondUserId);
         Task<IEnumerable<int>> GetUserLikes(int id, bool likers);
         Task<IEnumerable<int>> GetMatched(int userId);
+        Task Unmatch(int userId, int recipientId);
     }
     #endregion
 
@@ -111,6 +112,17 @@ namespace DatingApp.API.Services
             var matchedUsers = likees.Where(i => likers.Contains(i));
 
             return matchedUsers;
+        }
+
+        // Unmatch
+        public async Task Unmatch(int userId, int recipientId)
+        {
+            if(await AreMatched(userId, recipientId) == false)
+            {
+                throw new AppException("Users are not matched");
+            }
+
+
         }
     }
 }

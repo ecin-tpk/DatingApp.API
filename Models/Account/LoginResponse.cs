@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using DatingApp.API.Models.Interests;
 using DatingApp.API.Models.Photos;
 
 namespace DatingApp.API.Models.Account
@@ -17,7 +18,6 @@ namespace DatingApp.API.Models.Account
 
         public string Name { get; set; }
         public string Gender { get; set; }
-        //public string Interests { get; set; }
         public string LookingFor { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string Location { get; set; }
@@ -38,6 +38,7 @@ namespace DatingApp.API.Models.Account
         public string Drinking { get; set; }
         public bool HideAge { get; set; }
         public string PhotoUrl { get; set; }
+        //public ICollection<InterestForCardResponse> Activities { get; set; }
         public ICollection<PhotoResponse> Photos { get; set; }
 
         // Refresh token is returned in http only cookie

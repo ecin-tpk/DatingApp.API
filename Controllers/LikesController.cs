@@ -34,5 +34,19 @@ namespace DatingApp.API.Controllers
 
             return Ok();
         }
+
+        // PATCH: 
+        [HttpPatch("")]
+        public async Task<IActionResult> Unmatch(int userId, int recipientId)
+        {
+            if (userId != User.Id)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
+
+            await _likeService.Unmatch(userId, recipientId);
+
+            return Ok();
+        }
     }
 }

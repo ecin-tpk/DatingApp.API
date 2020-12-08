@@ -46,33 +46,22 @@ namespace DatingApp.API.Services
         // Get users (paginated)
         public async Task<PagedList<User>> GetPagination(UserParams userParams)
         {
-            var users = _context.Users.Include(p => p.Photos).AsQueryable();
-            users = users.Where(
-                u => u.Id != userParams.UserId &&
-                u.Role != Role.Admin
-            );
-            users = users.Where(u => u.Status == userParams.Status);
-
-
+            var users = _context.Users.Include(u => u.Photos)
+                .Include(u => u.Activities)
+                .ThenInclude(u => u.Activity)
+                .Where(u =>
+                    u.Id != userParams.UserId &&
+                    u.Role != Role.Admin &&
+                    u.Status == userParams.Status)
+                .AsQueryable();
 
             if (userParams.IsMatched)
             {
-                var matchedUsers = await _likeService.GetMatched(userParams.UserId);
-                users = users.Where(u => matchedUsers.Contains(u.Id));
+                var matched = await _likeService.GetMatched(userParams.UserId);
+                users = users.Where(u => matched.Contains(u.Id));
+                users = Sort(users, userParams);
 
-                //users = (IQueryable<User>)_mapper.Map<IQueryable<MatchedUserResponse>>(users);
-            }
-            if (!string.IsNullOrEmpty(userParams.Name))
-            {
-                users = users.Where(u => u.Name.ToLower().Contains(userParams.Name));
-            }
-            if (!string.IsNullOrEmpty(userParams.Verification))
-            {
-                users = users.Where(u => userParams.Verification == "true" ? u.Verified.HasValue : !u.Verified.HasValue);
-            }
-            if (userParams.Gender == "male" || userParams.Gender == "female")
-            {
-                users = users.Where(u => u.Gender == userParams.Gender);
+                return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
             if (userParams.Likers)
             {
@@ -81,12 +70,36 @@ namespace DatingApp.API.Services
                 var notMatched = likers.Where(i => !matched.Contains(i));
 
                 users = users.Where(u => notMatched.Contains(u.Id));
+
+                users = Sort(users, userParams);
+
+                return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
             if (userParams.Likees)
             {
-                var userLikees = await _likeService.GetUserLikes(userParams.UserId, false);
+                var likees = await _likeService.GetUserLikes(userParams.UserId, false);
+                var matched = await _likeService.GetMatched(userParams.UserId);
+                var notMatched = likees.Where(i => !matched.Contains(i));
 
-                users = users.Where(u => userLikees.Contains(u.Id));
+                users = users.Where(u => notMatched.Contains(u.Id));
+
+                users = Sort(users, userParams);
+
+                return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
+            }
+
+            if (!string.IsNullOrEmpty(userParams.Name))
+            {
+                users = users.Where(u => u.Name.ToLower().Contains(userParams.Name));
+            }
+            if (!string.IsNullOrEmpty(userParams.Verification))
+            {
+                users = users.Where(u => userParams.Verification == "true" ? u.Verified.HasValue : !u.Verified.HasValue);
+            }
+
+            if (userParams.Gender == "male" || userParams.Gender == "female")
+            {
+                users = users.Where(u => u.Gender == userParams.Gender);
             }
             if (userParams.MinAge != 18 || userParams.MaxAge != 99)
             {
@@ -98,7 +111,6 @@ namespace DatingApp.API.Services
             if (userParams.TopPicks)
             {
                 var userLikees = await _likeService.GetUserLikes(userParams.UserId, false);
-
                 users = users.Where(u => !userLikees.Contains(u.Id)).Include(u => u.Likers).OrderByDescending(u => u.Likers.Count());
             }
 
