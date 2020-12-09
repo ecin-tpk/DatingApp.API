@@ -77,7 +77,9 @@ namespace DatingApp.API.Migrations
                     Children = table.Column<string>(nullable: true),
                     Smoking = table.Column<string>(nullable: true),
                     Drinking = table.Column<string>(nullable: true),
-                    HideAge = table.Column<bool>(nullable: false)
+                    HideAge = table.Column<bool>(nullable: false),
+                    Latitude = table.Column<double>(nullable: false),
+                    Longitude = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -127,7 +129,8 @@ namespace DatingApp.API.Migrations
                 {
                     LikerId = table.Column<int>(nullable: false),
                     LikeeId = table.Column<int>(nullable: false),
-                    Super = table.Column<bool>(nullable: false)
+                    Super = table.Column<bool>(nullable: false),
+                    Unmatched = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -188,7 +191,6 @@ namespace DatingApp.API.Migrations
                     Url = table.Column<string>(nullable: true),
                     Order = table.Column<byte>(nullable: false),
                     DateAdded = table.Column<DateTime>(nullable: false),
-                    IsMain = table.Column<bool>(nullable: false),
                     PublicID = table.Column<string>(nullable: true),
                     UserId = table.Column<int>(nullable: false)
                 },

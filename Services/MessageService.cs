@@ -103,7 +103,7 @@ namespace DatingApp.API.Services
             // Check if they are matched or not
             if (await _likeService.AreMatched(model.SenderId, model.RecipientId) == false)
             {
-                throw new AppException("Can not send message to an unmatch user");
+                throw new AppException("Can not send message to an unmatched user");
             }
 
             if (await _userService.GetUser(model.RecipientId) == null)

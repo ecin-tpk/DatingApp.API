@@ -9,6 +9,7 @@ using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using DatingApp.API.Models.Account;
+using System.Linq;
 
 namespace DatingApp.API.Controllers
 {
@@ -40,11 +41,16 @@ namespace DatingApp.API.Controllers
 
             Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
+            foreach (var user in users)
+            {
+                // ToList works
+                user.Photos = user.Photos.OrderBy(p => p.Order).ToList();
+            }
+
             if (userParams.IsMatched || userParams.Likers || userParams.TopPicks)
             {
                 return Ok(_mapper.Map<IEnumerable<SimpleUserResponse>>(users));
             }
-
 
             return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
         }

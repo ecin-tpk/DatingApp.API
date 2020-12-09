@@ -56,6 +56,9 @@ namespace DatingApp.API.Migrations
                     b.Property<bool>("Super")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Unmatched")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("LikerId", "LikeeId");
 
                     b.HasIndex("LikeeId");
@@ -113,9 +116,6 @@ namespace DatingApp.API.Migrations
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsMain")
-                        .HasColumnType("INTEGER");
 
                     b.Property<byte>("Order")
                         .HasColumnType("INTEGER");
@@ -213,11 +213,17 @@ namespace DatingApp.API.Migrations
                     b.Property<DateTime>("LastActive")
                         .HasColumnType("TEXT");
 
+                    b.Property<double>("Latitude")
+                        .HasColumnType("REAL");
+
                     b.Property<string>("LiveWith")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
                         .HasColumnType("TEXT");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("LookingFor")
                         .HasColumnType("TEXT");

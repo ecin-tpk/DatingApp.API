@@ -7,7 +7,7 @@ namespace DatingApp.API.Models.Photos
         public string Url { get; set; }
         public byte Order { get; set; }
         public DateTime DateAdded { get; set; }
-        public bool IsMain { get; set; }
+        //public bool IsMain { get; set; }
         public string PublicId { get; set; }
     }
 }

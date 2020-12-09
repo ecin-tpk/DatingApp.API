@@ -121,6 +121,8 @@ namespace DatingApp.API.Services
             {
                 throw new KeyNotFoundException("User not found");
             }
+
+            // ToList works
             user.Photos = user.Photos.OrderBy(p => p.Order).ToList();
 
             //return _mapper.Map<UserDetailsResponse>(user);          
@@ -247,9 +249,36 @@ namespace DatingApp.API.Services
         {
             // Don't show profiles that i liked
             var liked = await _likeService.GetUserLikes(userParams.UserId, false);
+
+            //test
+            //var test = users.Where(u => !liked.Contains(u.Id))
+            //    .Select(u => new User
+            //    {
+            //        Id = u.Id,
+            //        Name = u.Name,
+            //        Gender = u.Gender,
+            //        DateOfBirth = u.DateOfBirth,
+            //        LastActive = u.LastActive,
+            //        Location = u.Location,
+            //        Bio = u.Bio,
+            //        JobTitle = u.JobTitle,
+            //        School = u.School,
+            //        Company = u.Company,
+            //        //Interests = u.Activities.Select(a => new
+            //        //{
+            //        //    a.Activity.Label
+            //        //}),
+            //        //Photos = u.Photos.Select(p => new
+            //        //{
+            //        //    p.Url
+            //        //})
+            //    }
+            //    );
+
             users = users.Include(u => u.Activities)
                 .ThenInclude(u => u.Activity)
                 .Where(u => !liked.Contains(u.Id));
+
 
             if (userParams.Gender == "male" || userParams.Gender == "female")
             {
@@ -336,5 +365,6 @@ namespace DatingApp.API.Services
                 passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
         }
+
     }
 }

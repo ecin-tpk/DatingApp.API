@@ -21,7 +21,7 @@ namespace DatingApp.API.Helpers
             CreateMap<User, UserDetailsResponse>()
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.HideAge ? null : src.DateOfBirth));
             CreateMap<User, UserForAdminResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
             CreateMap<UpdateRequest, User>()
                 .ForAllMembers(x => x.Condition((src, dest, prop) =>
                 {
@@ -47,24 +47,24 @@ namespace DatingApp.API.Helpers
 
             CreateMap<RegisterRequest, User>();
             CreateMap<User, LoginResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
             CreateMap<FacebookLoginResponse, User>();
             CreateMap<User, SimpleUserResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain).Url));
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
 
             CreateMap<UploadRequest, Photo>();
             CreateMap<Photo, PhotoResponse>();
 
             CreateMap<NewMessageRequest, Message>().ReverseMap();
             CreateMap<Message, NewMessageResponse>()
-                .ForMember(dest => dest.SenderPhotoUrl, opt => opt.MapFrom(src => src.Sender.Photos.FirstOrDefault(p => p.IsMain).Url))
-                .ForMember(dest => dest.RecipientPhotoUrl, opt => opt.MapFrom(src => src.Recipient.Photos.SingleOrDefault(p => p.IsMain).Url));
+                .ForMember(dest => dest.SenderPhotoUrl, opt => opt.MapFrom(src => src.Sender.Photos.FirstOrDefault(p => p.Order == 0).Url))
+                .ForMember(dest => dest.RecipientPhotoUrl, opt => opt.MapFrom(src => src.Recipient.Photos.SingleOrDefault(p => p.Order == 0).Url));
             CreateMap<Message, MessageResponse>()
                 .ForMember(
                     dest => dest.PhotoUrl,
                     opt => opt.MapFrom(src => src.Recipient.Photos != null ?
-                        src.Recipient.Photos.SingleOrDefault(p => p.IsMain).Url :
-                        src.Sender.Photos.SingleOrDefault(p => p.IsMain).Url)
+                        src.Recipient.Photos.SingleOrDefault(p => p.Order == 0).Url :
+                        src.Sender.Photos.SingleOrDefault(p => p.Order == 0).Url)
                 )
                 .ForMember(
                     dest => dest.Name,

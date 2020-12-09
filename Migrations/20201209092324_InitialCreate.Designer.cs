@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatingApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20201201121257_InitialCreate")]
+    [Migration("20201209092324_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -56,6 +56,9 @@ namespace DatingApp.API.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("Super")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Unmatched")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("LikerId", "LikeeId");
@@ -115,9 +118,6 @@ namespace DatingApp.API.Migrations
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsMain")
-                        .HasColumnType("INTEGER");
 
                     b.Property<byte>("Order")
                         .HasColumnType("INTEGER");
@@ -215,11 +215,17 @@ namespace DatingApp.API.Migrations
                     b.Property<DateTime>("LastActive")
                         .HasColumnType("TEXT");
 
+                    b.Property<double>("Latitude")
+                        .HasColumnType("REAL");
+
                     b.Property<string>("LiveWith")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
                         .HasColumnType("TEXT");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("LookingFor")
                         .HasColumnType("TEXT");

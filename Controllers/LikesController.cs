@@ -30,13 +30,18 @@ namespace DatingApp.API.Controllers
                 return Unauthorized(new { message = "Unauthorized" });
             }
 
-            await _likeService.LikeUser(userId, recipientId, super);
+            var match = await _likeService.LikeUser(userId, recipientId, super);
+
+            if(match != null)
+            {
+                await _notificationHub.Clients.User(recipientId.ToString()).SendAsync("receiveMatchNotification", match);
+            }   
 
             return Ok();
         }
 
         // PATCH: 
-        [HttpPatch("")]
+        [HttpPatch("{recipientId:int}/unmatch")]
         public async Task<IActionResult> Unmatch(int userId, int recipientId)
         {
             if (userId != User.Id)

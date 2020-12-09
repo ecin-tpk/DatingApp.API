@@ -47,6 +47,9 @@ namespace DatingApp.API.Entities
 
         public bool HideAge { get; set; }
 
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
         public List<RefreshToken> RefreshTokens { get; set; }
         public ICollection<Photo> Photos { get; set; }
         public ICollection<Interest> Activities { get; set; }

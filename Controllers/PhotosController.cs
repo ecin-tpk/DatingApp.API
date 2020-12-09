@@ -74,7 +74,7 @@ namespace DatingApp.API.Controllers
         }
 
         // PUT: Change photo order
-        [HttpPut("{id:int}/{order:int}")]
+        [HttpPatch("{photoId:int}/{order:int}")]
         public async Task<IActionResult> ChangeOrder(int userId, int photoId, byte order)
         {
             // Users can change their own data and admins can change any user's data
@@ -83,28 +83,28 @@ namespace DatingApp.API.Controllers
                 return Unauthorized(new { message = "Unauthorized" });
             }
 
-            await _photoService.ChangeOrder(photoId, order);
+            await _photoService.ChangeOrder(userId, photoId, order);
 
             return Ok("Changed photo order successfully");
         }
 
-        // POST: Set as main photo
-        [HttpPost("{id}/set-main")]
-        public async Task<IActionResult> SetMainPhoto(int userId, int id)
-        {
-            // Users can upload their own photo and admins can update any user's photo
-            if (userId != User.Id && User.Role != Role.Admin)
-            {
-                return Unauthorized(new { message = "Unauthorized" });
-            }
+        //// POST: Set as main photo
+        //[HttpPost("{id}/set-main")]
+        //public async Task<IActionResult> SetMainPhoto(int userId, int id)
+        //{
+        //    // Users can upload their own photo and admins can update any user's photo
+        //    if (userId != User.Id && User.Role != Role.Admin)
+        //    {
+        //        return Unauthorized(new { message = "Unauthorized" });
+        //    }
 
-            await _photoService.SetMain(userId, id);
+        //    await _photoService.SetMain(userId, id);
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // DELETE: Delete photo
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeletePhoto(int userId, int id)
         {
             // Users can delete their own photo and admins can delete any user's photo
@@ -114,7 +114,7 @@ namespace DatingApp.API.Controllers
             }
 
             await _photoService.Delete(userId, id);
-            return Ok();
+            return Ok("Photo deleted successfully");
         }
     }
 }

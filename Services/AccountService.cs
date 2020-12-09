@@ -159,8 +159,7 @@ namespace DatingApp.API.Services
                     var photo = new Photo
                     {
                         Url = facebookUser.Picture,
-                        DateAdded = DateTime.Now,
-                        IsMain = true
+                        DateAdded = DateTime.Now
                     };
 
                     createdUser.Photos.Add(photo);

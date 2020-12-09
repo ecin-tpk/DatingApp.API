@@ -9,5 +9,6 @@ namespace DatingApp.API.Entities
         public User Liker { get; set; }
         public User Likee { get; set; }
         public bool Super { get; set; }
+        public bool Unmatched { get; set; }
     }
 }

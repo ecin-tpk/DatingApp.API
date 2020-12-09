@@ -10,6 +10,8 @@ namespace DatingApp.API.Helpers.RequestParams
         public int MaxAge { get; set; } = 99;
         public int MinHeight { get; set; }
         public int MaxHeight { get; set; }
+        public string Location { get; set; }
+        public byte MaxDistance { get; set; }
 
         public bool ForCards { get; set; }
         public bool Likees { get; set; } = false;

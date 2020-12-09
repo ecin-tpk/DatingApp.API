@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatingApp.API.Services
@@ -10,8 +12,8 @@ namespace DatingApp.API.Services
     #region Interface
     public interface ILikeService
     {
-        Task LikeUser(int userId, int recipientId, bool super);
-        Task<Like> GetLike(int userId, int recipientId);
+        Task<UserResponse> LikeUser(int userId, int recipientId, bool super);
+        Task<bool> GetLike(int userId, int recipientId);
         Task<bool> AreMatched(int firstUserId, int secondUserId);
         Task<IEnumerable<int>> GetUserLikes(int id, bool likers);
         Task<IEnumerable<int>> GetMatched(int userId);
@@ -23,14 +25,16 @@ namespace DatingApp.API.Services
     public class LikeService : ILikeService
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public LikeService(DataContext context)
+        public LikeService(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // Like a user
-        public async Task LikeUser(int userId, int recipientId, bool super)
+        public async Task<UserResponse> LikeUser(int userId, int recipientId, bool super)
         {
             if (await _context.Users.SingleOrDefaultAsync(u => u.Id == recipientId) == null)
             {
@@ -40,7 +44,7 @@ namespace DatingApp.API.Services
             {
                 throw new AppException("Yes, I love myself too");
             }
-            if (await GetLike(userId, recipientId) != null)
+            if (await GetLike(userId, recipientId))
             {
                 throw new AppException("You already liked this user");
             }
@@ -55,25 +59,30 @@ namespace DatingApp.API.Services
             _context.Add(like);
 
             await _context.SaveChangesAsync();
+
+            // Return user if it's a match
+            if (await GetLike(recipientId, userId))
+            {
+                var user = await _context.Users.Where(u => u.Id == recipientId).Include(u => u.Photos).FirstOrDefaultAsync();
+                return _mapper.Map<UserResponse>(user);
+            }
+
+            return null;
         }
 
         // Return a like object if this user has liked another one
-        public async Task<Like> GetLike(int userId, int recipientId)
+        public async Task<bool> GetLike(int userId, int recipientId)
         {
-            return await _context.Likes.SingleOrDefaultAsync(u => u.LikerId == userId && u.LikeeId == recipientId);
+            return await _context.Likes.AnyAsync(l => l.LikerId == userId && l.LikeeId == recipientId);
         }
 
         // Check if 2 users are matched
         public async Task<bool> AreMatched(int firstUserId, int secondUserId)
         {
-            var firstLike = await _context.Likes.SingleOrDefaultAsync(l => l.LikerId == firstUserId && l.LikeeId == secondUserId);
-            var secondLike = await _context.Likes.SingleOrDefaultAsync(l => l.LikerId == secondUserId && l.LikeeId == firstUserId);
-            if (firstLike == null || secondLike == null)
-            {
-                return false;
-            }
+            var firstLike = await _context.Likes.AnyAsync(l => l.LikerId == firstUserId && l.LikeeId == secondUserId);
+            var secondLike = await _context.Likes.AnyAsync(l => l.LikerId == secondUserId && l.LikeeId == firstUserId);
 
-            return true;
+            return (firstLike && secondLike);
         }
 
         // Get likes from sender or recipient
@@ -87,11 +96,11 @@ namespace DatingApp.API.Services
             // If likers = true, return list of userId that i liked, otherwise return list of userId that like me
             if (likers)
             {
-                return user.Likers.Where(u => u.LikeeId == id).Select(i => i.LikerId);
+                return user.Likers.Where(l => l.LikeeId == id && !l.Unmatched).Select(i => i.LikerId);
             }
             else
             {
-                return user.Likees.Where(u => u.LikerId == id).Select(i => i.LikeeId);
+                return user.Likees.Where(l => l.LikerId == id && !l.Unmatched).Select(i => i.LikeeId);
             }
         }
 
@@ -104,10 +113,10 @@ namespace DatingApp.API.Services
                 .SingleOrDefaultAsync(u => u.Id == userId);
 
             // Find id of users that i liked
-            var likees = user.Likers.Where(u => u.LikeeId == userId).Select(l => l.LikerId);
+            var likees = user.Likers.Where(l => l.LikeeId == userId && !l.Unmatched).Select(l => l.LikerId);
 
             // Find id of users that liked me
-            var likers = user.Likees.Where(u => u.LikerId == userId).Select(l => l.LikeeId);
+            var likers = user.Likees.Where(l => l.LikerId == userId && !l.Unmatched).Select(l => l.LikeeId);
 
             // Matched users are who liked me and i already liked them
             var matchedUsers = likees.Where(i => likers.Contains(i));
@@ -118,12 +127,20 @@ namespace DatingApp.API.Services
         // Unmatch
         public async Task Unmatch(int userId, int recipientId)
         {
-            if(await AreMatched(userId, recipientId) == false)
+            if (await AreMatched(userId, recipientId) == false)
             {
                 throw new AppException("Users are not matched");
             }
 
+            var like = await _context.Likes.FirstOrDefaultAsync(l => l.LikerId == userId && l.LikeeId == recipientId);
+            like.Unmatched = true;
 
+            _context.Likes.Update(like);
+
+            if (await _context.SaveChangesAsync() == 0)
+            {
+                throw new AppException("Update failed");
+            }
         }
 
         // Liked but not matched
