@@ -26,6 +26,7 @@ namespace DatingApp.API.Services
         Task<UserResponse> Create(NewUserRequest model);
         Task<int[]> GetNewUsersPerMonth(int year);
         Task<int[]> GetTotalUsersPerMonth(int year);
+        Task<int[]> GetUsersByAge(int year);
         List<int> GetAdminIds();
     }
     #endregion
@@ -214,6 +215,35 @@ namespace DatingApp.API.Services
             return totalUsers;
         }
 
+        // Users by age
+        public async Task<int[]> GetUsersByAge(int year)
+        {
+            var thisYear = DateTime.Now.Year;
+
+            var users = _context.Users.Where(u => u.Role != Role.Admin);
+
+            var total = await users.CountAsync();
+
+            // 18 - 29
+            var young = await users.Where(u => u.Created.Year <= year && thisYear - u.DateOfBirth.Value.Year < 29).CountAsync();
+
+            // 50+
+            var old = await users.Where(u => u.Created.Year <= year && thisYear - u.DateOfBirth.Value.Year > 50).CountAsync();
+
+            // 30 - 50
+
+            var percentage = new int[3];
+            //percentage[0] = Convert.ToInt16(Math.Round(Convert.ToDecimal(young / total * 100), MidpointRounding.AwayFromZero));
+            //percentage[2] = Convert.ToInt16(Math.Round(Convert.ToDecimal(old / total * 100), MidpointRounding.AwayFromZero));
+            //percentage[1] = 100 - percentage[0] - percentage[2];
+
+            percentage[0] = young;
+            percentage[2] = old;
+            percentage[1] = total - young - old;
+
+            return percentage;
+        }
+
         // Create new user (admin)
         public async Task<UserResponse> Create(NewUserRequest model)
         {
@@ -241,6 +271,8 @@ namespace DatingApp.API.Services
         {
             return _context.Users.Where(u => u.Role == Role.Admin).Select(u => u.Id).ToList();
         }
+
+
 
         // Helpers
 
@@ -366,5 +398,26 @@ namespace DatingApp.API.Services
             }
         }
 
+        // Calculate age
+
+        private static int CalculateAge(DateTime? value)
+        {
+            var now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
+
+            var dateOfBirth = Convert.ToDateTime(value);
+
+            var leapYears = 0;
+
+            for (int i = dateOfBirth.Year; i <= now.Year; i++)
+            {
+                if (DateTime.IsLeapYear(i))
+                {
+                    leapYears++;
+                }
+            }
+
+            TimeSpan timeSpan = now.Subtract(dateOfBirth);
+            return timeSpan.Days - leapYears;
+        }
     }
 }

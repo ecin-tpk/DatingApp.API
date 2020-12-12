@@ -100,6 +100,15 @@ namespace DatingApp.API.Controllers
             return Ok(usersPerMonth);
         }
 
+        // GET: Percentage users by age
+        [HttpGet("users/users-by-age/{year:int}")]
+        public async Task<IActionResult> GetUsersByAge(int year)
+        {
+            var usersByAge = await _userService.GetUsersByAge(year);
+
+            return Ok(usersByAge);
+        }
+
         // GET: Get user reports (paginated)
         [HttpGet("users/reports")]
         [Authorize(Role.Admin)]

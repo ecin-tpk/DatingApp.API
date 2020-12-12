@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using DatingApp.API.Helpers;
 using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Hubs;
 using DatingApp.API.Services;
@@ -28,6 +29,11 @@ namespace DatingApp.API.Controllers
             if (userId != User.Id)
             {
                 return Unauthorized(new { message = "Unauthorized" });
+            }
+
+            if (userId == recipientId)
+            {
+                throw new AppException("I love myself too");
             }
 
             var match = await _likeService.LikeUser(userId, recipientId, super);

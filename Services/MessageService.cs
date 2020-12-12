@@ -44,12 +44,11 @@ namespace DatingApp.API.Services
         public async Task<PagedList<Message>> GetMessages(MessageParams messageParams)
         {
             var user = await _context.Users
-                .Include(u => u.Photos)
                 .Include(u => u.MessagesSent)
                 .ThenInclude(m => m.Recipient)
                 .ThenInclude(u => u.Photos)
                 .Include(u => u.MessagesReceived)
-                .SingleOrDefaultAsync(u => u.Id == messageParams.UserId);
+                .FirstOrDefaultAsync(u => u.Id == messageParams.UserId);
 
             user.Name = null;
             user.Photos = null;
@@ -98,6 +97,10 @@ namespace DatingApp.API.Services
             // Must find sender for automapping
             var user = await _userService.GetUser(userId);
 
+            if (model.Type == MessageType.Text.ToString())
+            {
+                model.Content = model.Content.Trim();
+            }
             model.SenderId = user.Id;
 
             // Check if they are matched or not
@@ -176,7 +179,7 @@ namespace DatingApp.API.Services
                         m.SenderDeleted == false &&
                         m.SenderId == msgThreadparams.UserId
                     )
-                ).AsQueryable().OrderBy(m => m.MessageSent);
+                ).AsQueryable().OrderByDescending(m => m.MessageSent);
 
             return await PagedList<Message>.CreateAsync(messages, msgThreadparams.PageNumber, msgThreadparams.PageSize);
         }
