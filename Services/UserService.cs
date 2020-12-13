@@ -56,7 +56,7 @@ namespace DatingApp.API.Services
 
             if (userParams.ForCards)
             {
-                users = await GetUsersForCards(users, userParams);
+                users = GetUsersForCards(users, userParams);
 
                 return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
@@ -94,10 +94,21 @@ namespace DatingApp.API.Services
 
             if (userParams.TopPicks)
             {
-                var userLikees = await _likeService.GetUserLikes(userParams.UserId, false);
-                users = users.Where(u => !userLikees.Contains(u.Id))
-                    .Include(u => u.Likers)
-                    .OrderByDescending(u => u.Likers.Count());
+                users = GetTopPicks(users, userParams);
+                ////var userLikees = await _likeService.GetUserLikes(userParams.UserId, false);
+                //var dontShow = _context.Likes
+                //   .Where(l =>
+                //       l.LikerId == userParams.UserId ||
+                //       l.LikerId == userParams.UserId && l.Unmatched)
+                //   .Select(l => l.LikeeId);
+
+                //users = users
+                //    .Where(u =>
+                //        u.Gender==userParams.Gender &&
+                //        u.
+                //        !dontShow.Contains(u.Id))
+                //    .Include(u => u.Likers)
+                //    .OrderByDescending(u => u.Likers.Count());
 
                 return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
@@ -272,45 +283,22 @@ namespace DatingApp.API.Services
             return _context.Users.Where(u => u.Role == Role.Admin).Select(u => u.Id).ToList();
         }
 
-
-
         // Helpers
 
         // Get users for card stack
-        private async Task<IQueryable<User>> GetUsersForCards(IQueryable<User> users, UserParams userParams)
+        private IQueryable<User> GetUsersForCards(IQueryable<User> users, UserParams userParams)
         {
-            // Don't show profiles that i liked
-            var liked = await _likeService.GetUserLikes(userParams.UserId, false);
-
-            //test
-            //var test = users.Where(u => !liked.Contains(u.Id))
-            //    .Select(u => new User
-            //    {
-            //        Id = u.Id,
-            //        Name = u.Name,
-            //        Gender = u.Gender,
-            //        DateOfBirth = u.DateOfBirth,
-            //        LastActive = u.LastActive,
-            //        Location = u.Location,
-            //        Bio = u.Bio,
-            //        JobTitle = u.JobTitle,
-            //        School = u.School,
-            //        Company = u.Company,
-            //        //Interests = u.Activities.Select(a => new
-            //        //{
-            //        //    a.Activity.Label
-            //        //}),
-            //        //Photos = u.Photos.Select(p => new
-            //        //{
-            //        //    p.Url
-            //        //})
-            //    }
-            //    );
+            // Don't show profiles that i liked, unmatched or reported
+            var reported = _context.Reports.Where(r => r.SenderId == userParams.UserId).Select(r => r.UserId);
+            var liked = _context.Likes
+               .Where(l =>
+                   l.LikerId == userParams.UserId)
+               .Select(l => l.LikeeId);
+            var dontShow = liked.Union(reported);
 
             users = users.Include(u => u.Activities)
                 .ThenInclude(u => u.Activity)
-                .Where(u => !liked.Contains(u.Id));
-
+                .Where(u => !dontShow.Contains(u.Id));
 
             if (userParams.Gender == "male" || userParams.Gender == "female")
             {
@@ -352,6 +340,37 @@ namespace DatingApp.API.Services
             }
 
             return Sort(users, userParams);
+        }
+
+        // Get top picks
+        private IQueryable<User> GetTopPicks(IQueryable<User> users, UserParams userParams)
+        {
+            // Don't show profiles that i liked, unmatched or reported
+            var reported = _context.Reports.Where(r => r.SenderId == userParams.UserId).Select(r => r.UserId);
+            var liked = _context.Likes
+               .Where(l =>
+                   l.LikerId == userParams.UserId)
+               .Select(l => l.LikeeId);
+            var dontShow = liked.Union(reported);
+
+            users = users.Where(u => !dontShow.Contains(u.Id));
+
+            if (userParams.Gender == "male" || userParams.Gender == "female")
+            {
+                users = users.Where(u => u.Gender == userParams.Gender);
+            }
+            if (userParams.MinAge != 18 || userParams.MaxAge != 99)
+            {
+                var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+                var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
+
+                users = users.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
+            }
+
+            users = users.Include(u => u.Likers)
+                .OrderByDescending(u => u.Likers.Count());
+
+            return users;
         }
 
         // Sort result

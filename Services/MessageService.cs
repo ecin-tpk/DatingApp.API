@@ -2,9 +2,7 @@
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
 using DatingApp.API.Helpers.RequestParams;
-using DatingApp.API.Hubs;
 using DatingApp.API.Models.Messages;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -96,17 +94,22 @@ namespace DatingApp.API.Services
         {
             // Must find sender for automapping
             var user = await _userService.GetUser(userId);
-
-            if (model.Type == MessageType.Text.ToString())
-            {
-                model.Content = model.Content.Trim();
-            }
             model.SenderId = user.Id;
-
             // Check if they are matched or not
             if (await _likeService.AreMatched(model.SenderId, model.RecipientId) == false)
             {
                 throw new AppException("Can not send message to an unmatched user");
+            }
+            if (await _context.Likes.AnyAsync(l =>
+                l.LikerId == model.SenderId && l.Unmatched ||
+                l.LikeeId == model.SenderId && l.Unmatched))
+            {
+                throw new AppException("Can not send message to an unmatched user");
+            }
+
+            if (model.Type == MessageType.Text.ToString())
+            {
+                model.Content = model.Content.Trim();
             }
 
             if (await _userService.GetUser(model.RecipientId) == null)
