@@ -23,6 +23,8 @@ namespace DatingApp.API.Controllers
         }
 
         // GET: Get all interests
+
+        // GET: Get interests of user
         [HttpGet]
         public IActionResult GetAll(int userId)
         {

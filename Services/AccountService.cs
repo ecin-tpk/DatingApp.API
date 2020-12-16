@@ -197,7 +197,6 @@ namespace DatingApp.API.Services
                 throw new AppException("Invalid token");
             }
 
-
             return null;
 
             //var facebookUser = await _facebookService.GetUser(model, origin);
