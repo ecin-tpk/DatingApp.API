@@ -43,8 +43,8 @@ namespace DatingApp.API.Services
         {
             var user = await _context.Users
                 .Include(u => u.MessagesSent)
-                .ThenInclude(m => m.Recipient)
-                .ThenInclude(u => u.Photos)
+                //.ThenInclude(m => m.Recipient)
+                //.ThenInclude(u => u.Photos)
                 .Include(u => u.MessagesReceived)
                 .FirstOrDefaultAsync(u => u.Id == messageParams.UserId);
 
@@ -76,6 +76,29 @@ namespace DatingApp.API.Services
                 )
                 .OrderByDescending(m => m.MessageSent)
                 .AsQueryable();
+
+            foreach (var message in messages)
+            {
+
+                if (message.SenderId == messageParams.UserId)
+                {
+                    ICollection<Photo> mainPhoto = new List<Photo>
+                    {
+                        await _context.Photos.Where(p => p.UserId == message.RecipientId).Select(p => new Photo { Url = p.Url }).FirstOrDefaultAsync()
+                    };
+
+                    message.Recipient = await _context.Users.Where(u => u.Id == message.RecipientId).Select(u => new User { Name = u.Name, Photos = mainPhoto }).FirstOrDefaultAsync(); ;
+                }
+                else
+                {
+                    ICollection<Photo> mainPhoto = new List<Photo>
+                    {
+                        await _context.Photos.Where(p => p.UserId == message.SenderId).Select(p => new Photo { Url = p.Url }).FirstOrDefaultAsync()
+                    };
+
+                    message.Sender = await _context.Users.Where(u => u.Id == message.SenderId).Select(u => new User { Name = u.Name, Photos = mainPhoto }).FirstOrDefaultAsync(); ;
+                }
+            }
 
             // Filter messages
             messages = FilterMessages(messages, messageParams);

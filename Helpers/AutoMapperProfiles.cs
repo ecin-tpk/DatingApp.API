@@ -58,13 +58,13 @@ namespace DatingApp.API.Helpers
             CreateMap<NewMessageRequest, Message>().ReverseMap();
             CreateMap<Message, NewMessageResponse>()
                 .ForMember(dest => dest.SenderPhotoUrl, opt => opt.MapFrom(src => src.Sender.Photos.FirstOrDefault(p => p.Order == 0).Url))
-                .ForMember(dest => dest.RecipientPhotoUrl, opt => opt.MapFrom(src => src.Recipient.Photos.SingleOrDefault(p => p.Order == 0).Url));
+                .ForMember(dest => dest.RecipientPhotoUrl, opt => opt.MapFrom(src => src.Recipient.Photos.FirstOrDefault(p => p.Order == 0).Url));
             CreateMap<Message, MessageResponse>()
                 .ForMember(
                     dest => dest.PhotoUrl,
                     opt => opt.MapFrom(src => src.Recipient.Photos != null ?
-                        src.Recipient.Photos.SingleOrDefault(p => p.Order == 0).Url :
-                        src.Sender.Photos.SingleOrDefault(p => p.Order == 0).Url)
+                        src.Recipient.Photos.FirstOrDefault(p => p.Order == 0).Url :
+                        src.Sender.Photos.FirstOrDefault(p => p.Order == 0).Url)
                 )
                 .ForMember(
                     dest => dest.Name,

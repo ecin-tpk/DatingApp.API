@@ -75,6 +75,7 @@ namespace DatingApp.API.Migrations
                     EyeColor = table.Column<string>(nullable: true),
                     LiveWith = table.Column<string>(nullable: true),
                     Children = table.Column<string>(nullable: true),
+                    FamilyPlan = table.Column<string>(nullable: true),
                     Smoking = table.Column<string>(nullable: true),
                     Drinking = table.Column<string>(nullable: true),
                     HideAge = table.Column<bool>(nullable: false),

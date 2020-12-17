@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatingApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20201209092324_InitialCreate")]
+    [Migration("20201217102557_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -195,6 +195,9 @@ namespace DatingApp.API.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FacebookUID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FamilyPlan")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Gender")

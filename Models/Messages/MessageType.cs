@@ -9,6 +9,7 @@ namespace DatingApp.API.Models.Messages
     {
         Text,
         Image,
-        Gif
+        Gif,
+        Location
     }
 }

@@ -195,6 +195,9 @@ namespace DatingApp.API.Migrations
                     b.Property<string>("FacebookUID")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FamilyPlan")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Gender")
                         .HasColumnType("TEXT");
 
