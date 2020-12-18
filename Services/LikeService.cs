@@ -12,7 +12,7 @@ namespace DatingApp.API.Services
     #region Interface
     public interface ILikeService
     {
-        Task<UserResponse> LikeUser(int userId, int recipientId, bool super);
+        Task<bool> LikeUser(int userId, int recipientId, bool super);
         Task<bool> GetLike(int userId, int recipientId);
         Task<bool> AreMatched(int firstUserId, int secondUserId);
         Task<IEnumerable<int>> GetUserLikes(int id, bool likers);
@@ -34,7 +34,7 @@ namespace DatingApp.API.Services
         }
 
         // Like a user
-        public async Task<UserResponse> LikeUser(int userId, int recipientId, bool super)
+        public async Task<bool> LikeUser(int userId, int recipientId, bool super)
         {
             if (await _context.Users.SingleOrDefaultAsync(u => u.Id == recipientId) == null)
             {
@@ -60,14 +60,8 @@ namespace DatingApp.API.Services
 
             await _context.SaveChangesAsync();
 
-            // Return user if it's a match
-            if (await GetLike(recipientId, userId))
-            {
-                var user = await _context.Users.Where(u => u.Id == recipientId).Include(u => u.Photos).FirstOrDefaultAsync();
-                return _mapper.Map<UserResponse>(user);
-            }
-
-            return null;
+            // If they liked me (matched) then return true
+            return await GetLike(recipientId, userId);
         }
 
         // Return a like object if this user has liked another one

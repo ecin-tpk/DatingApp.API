@@ -79,15 +79,19 @@ namespace DatingApp.API.Services
 
             foreach (var message in messages)
             {
-
                 if (message.SenderId == messageParams.UserId)
                 {
                     ICollection<Photo> mainPhoto = new List<Photo>
                     {
-                        await _context.Photos.Where(p => p.UserId == message.RecipientId).Select(p => new Photo { Url = p.Url }).FirstOrDefaultAsync()
+                        await _context.Photos
+                            .Where(p => p.UserId == message.RecipientId && p.Order == 0)
+                            .Select(p => new Photo { Url = p.Url }).FirstOrDefaultAsync()
                     };
 
-                    message.Recipient = await _context.Users.Where(u => u.Id == message.RecipientId).Select(u => new User { Name = u.Name, Photos = mainPhoto }).FirstOrDefaultAsync(); ;
+                    message.Recipient = await _context.Users
+                        .Where(u => u.Id == message.RecipientId)
+                        .Select(u => new User { Name = u.Name, Photos = mainPhoto })
+                        .FirstOrDefaultAsync(); ;
                 }
                 else
                 {
@@ -96,7 +100,10 @@ namespace DatingApp.API.Services
                         await _context.Photos.Where(p => p.UserId == message.SenderId).Select(p => new Photo { Url = p.Url }).FirstOrDefaultAsync()
                     };
 
-                    message.Sender = await _context.Users.Where(u => u.Id == message.SenderId).Select(u => new User { Name = u.Name, Photos = mainPhoto }).FirstOrDefaultAsync(); ;
+                    message.Sender = await _context.Users
+                        .Where(u => u.Id == message.SenderId)
+                        .Select(u => new User { Name = u.Name, Photos = mainPhoto })
+                        .FirstOrDefaultAsync(); ;
                 }
             }
 

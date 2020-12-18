@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
+using AutoMapper;
 using DatingApp.API.Helpers;
 using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Hubs;
+using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -13,12 +15,16 @@ namespace DatingApp.API.Controllers
     [Route("api/users/{userId}/[controller]")]
     public class LikesController : BaseController
     {
+        private readonly IMapper _mapper;
+        private readonly IUserService _userService;
         private readonly ILikeService _likeService;
         private readonly IHubContext<NotificationHub> _notificationHub;
 
-        public LikesController(ILikeService likeService, IHubContext<NotificationHub> notificationHub)
+        public LikesController(IMapper mapper, IUserService userService, ILikeService likeService, IHubContext<NotificationHub> notificationHub)
         {
+            _mapper = mapper;
             _likeService = likeService;
+            _userService = userService;
             _notificationHub = notificationHub;
         }
 
@@ -36,11 +42,13 @@ namespace DatingApp.API.Controllers
                 throw new AppException("I love myself too");
             }
 
-            var match = await _likeService.LikeUser(userId, recipientId, super);
-
-            if(match != null)
+            if(await _likeService.LikeUser(userId, recipientId, super))
             {
-                await _notificationHub.Clients.User(recipientId.ToString()).SendAsync("receiveMatchNotification", match);
+                await _notificationHub.Clients
+                    .User(recipientId.ToString())
+                    .SendAsync("receiveMatchNotification", await _userService.GetSimpleUser(userId));
+
+                return Ok(await _userService.GetSimpleUser(recipientId));
             }   
 
             return Ok();

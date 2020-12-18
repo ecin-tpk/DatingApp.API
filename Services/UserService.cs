@@ -19,7 +19,11 @@ namespace DatingApp.API.Services
     {
         Task<PagedList<User>> GetPagination(UserParams userParams);
         //Task<UserDetailsResponse> GetById(int id);
+
+        // Simple user has id, name, first photo
+        Task<SimpleUserResponse> GetSimpleUser(int id);
         Task<User> GetById(int id);
+
         Task<UpdateResponse> Update(int id, UpdateRequest model);
         Task<User> GetUser(int id);
         Task<int[]> GetNumberOfUsersByStatus();
@@ -122,6 +126,19 @@ namespace DatingApp.API.Services
             }
 
             return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
+        }
+
+        // Get simple user
+        public async Task<SimpleUserResponse> GetSimpleUser(int id)
+        {
+            var photos = await _context.Photos.Where(p => p.UserId == id && p.Order == 0).Select(p => new Photo { Url = p.Url }).ToListAsync();
+
+            var user = await _context.Users
+                .Where(u => u.Id == id)
+                .Select(u => new User { Id = u.Id, Name = u.Name, Photos = photos })
+                .FirstOrDefaultAsync();
+
+            return _mapper.Map<SimpleUserResponse>(user);
         }
 
         // Get user by Id for normal user
