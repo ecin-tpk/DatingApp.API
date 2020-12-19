@@ -45,7 +45,7 @@ namespace DatingApp.API.Services
         {
             model.SenderId = userId;
 
-            if (await _userService.GetUser(model.UserId) == null)
+            if (await _userService.GetUserWithPhotos(model.UserId) == null)
             {
                 throw new KeyNotFoundException("User not found");
             }

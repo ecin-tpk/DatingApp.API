@@ -26,14 +26,14 @@ namespace DatingApp.API.Controllers
 
         // GET: Get interests of user
         [HttpGet]
-        public IActionResult GetAll(int userId)
+        public IActionResult GetInterestsOfUser(int userId)
         {
             if (userId != User.Id)
             {
                 return Unauthorized(new { message = "Unauthorized" });
             }
 
-            var interests = _interestService.GetAll(userId);
+            var interests = _interestService.GetInterestsOfUser(userId);
 
             return Ok(_mapper.Map<IEnumerable<InterestResponse>>(interests));
         }

@@ -52,7 +52,7 @@ namespace DatingApp.API.Services
         // Save photo url
         public async Task<PhotoResponse> SavePhotoUrl(int userId, UploadRequest model)
         {
-            var userInDb = await _userService.GetUser(userId);
+            var userInDb = await _userService.GetUserWithPhotos(userId);
             if (userInDb.Photos.Count == 9)
             {
                 throw new AppException("You cannot have more than 9 photos");
@@ -118,7 +118,7 @@ namespace DatingApp.API.Services
         // Upload image to Cloudinary
         public async Task<PhotoResponse> Upload(int userId, UploadRequest model)
         {
-            var userInDb = await _userService.GetUser(userId);
+            var userInDb = await _userService.GetUserWithPhotos(userId);
             if (userInDb.Photos.Count == 9)
             {
                 throw new AppException("You cannot have more than 9 photos");

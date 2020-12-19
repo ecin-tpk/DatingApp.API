@@ -10,7 +10,7 @@ namespace DatingApp.API.Services
     #region Interface
     public interface IInterestService
     {
-        IEnumerable<Activity> GetAll(int userId);
+        IEnumerable<Activity> GetInterestsOfUser(int userId);
         Task AddInterest(int userId, int activityId);
         Task RemoveInterest(int userId, int activityId);
     }
@@ -26,7 +26,7 @@ namespace DatingApp.API.Services
         }
 
         // Get all interests of user
-        public IEnumerable<Activity> GetAll(int userId)
+        public IEnumerable<Activity> GetInterestsOfUser(int userId)
         {
             var interests = _context.Interests.Where(i => i.UserId == userId).Select(u => u.ActivityId);
 

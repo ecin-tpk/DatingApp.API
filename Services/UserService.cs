@@ -22,10 +22,10 @@ namespace DatingApp.API.Services
 
         // Simple user has id, name, first photo
         Task<SimpleUserResponse> GetSimpleUser(int id);
-        Task<User> GetById(int id);
+        Task<User> GetUserDetails(int id);
 
         Task<UpdateResponse> Update(int id, UpdateRequest model);
-        Task<User> GetUser(int id);
+        Task<User> GetUserWithPhotos(int id);
         Task<int[]> GetNumberOfUsersByStatus();
         Task<UserResponse> Create(NewUserRequest model);
         Task<int[]> GetNewUsersPerMonth(int year);
@@ -143,16 +143,13 @@ namespace DatingApp.API.Services
 
         // Get user by Id for normal user
         //public async Task<UserDetailsResponse> GetById(int id)
-        public async Task<User> GetById(int id)
+        public async Task<User> GetUserDetails(int id)
         {
-            var user = await GetUser(id);
+            var user = await GetUserWithPhotos(id);
             if (user.Role == Role.Admin)
             {
                 throw new KeyNotFoundException("User not found");
             }
-
-            // ToList works
-            user.Photos = user.Photos.OrderBy(p => p.Order).ToList();
 
             //return _mapper.Map<UserDetailsResponse>(user);          
             return user;
@@ -161,7 +158,7 @@ namespace DatingApp.API.Services
         // Update user info
         public async Task<UpdateResponse> Update(int id, UpdateRequest model)
         {
-            var userFromRepo = await GetUser(id);
+            var userFromRepo = await GetUserWithPhotos(id);
 
             //// Validate on update email
             //if (userFromRepo.Email != model.Email && await _context.Users.AnyAsync(u => u.Email == model.Email))
@@ -184,13 +181,16 @@ namespace DatingApp.API.Services
         }
 
         // Get full information of a user by id
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUserWithPhotos(int id)
         {
-            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.Id == id);
+            var user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found");
             }
+
+            // ToList works
+            user.Photos = user.Photos.OrderBy(p => p.Order).ToList();
 
             return user;
         }
@@ -313,8 +313,9 @@ namespace DatingApp.API.Services
                .Select(l => l.LikeeId);
             var dontShow = liked.Union(reported);
 
-            users = users.Include(u => u.Activities)
-                .ThenInclude(u => u.Activity)
+            users = users
+                //.Include(u => u.Activities)
+                //.ThenInclude(u => u.Activity)
                 .Where(u => !dontShow.Contains(u.Id));
 
             if (userParams.Gender == "male" || userParams.Gender == "female")

@@ -123,7 +123,7 @@ namespace DatingApp.API.Services
         public async Task<NewMessageResponse> Create(int userId, NewMessageRequest model)
         {
             // Must find sender for automapping
-            var user = await _userService.GetUser(userId);
+            var user = await _userService.GetUserWithPhotos(userId);
             model.SenderId = user.Id;
             // Check if they are matched or not
             if (await _likeService.AreMatched(model.SenderId, model.RecipientId) == false)
@@ -142,7 +142,7 @@ namespace DatingApp.API.Services
                 model.Content = model.Content.Trim();
             }
 
-            if (await _userService.GetUser(model.RecipientId) == null)
+            if (await _userService.GetUserWithPhotos(model.RecipientId) == null)
             {
                 throw new KeyNotFoundException("User not found");
             }

@@ -10,6 +10,7 @@ using DatingApp.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using DatingApp.API.Models.Account;
 using System.Linq;
+using DatingApp.API.Models.Interests;
 
 namespace DatingApp.API.Controllers
 {
@@ -18,11 +19,13 @@ namespace DatingApp.API.Controllers
     [Route("api/[controller]")]
     public class UsersController : BaseController
     {
+        private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
 
-        public UsersController(IMapper mapper, IUserService userService)
+        public UsersController(DataContext context, IMapper mapper, IUserService userService)
         {
+            _context = context;
             _mapper = mapper;
             _userService = userService;
         }
@@ -54,26 +57,41 @@ namespace DatingApp.API.Controllers
                 return Ok(_mapper.Map<IEnumerable<SimpleUserResponse>>(users));
             }
 
-            return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
+            var mappedUsers = _mapper.Map<IEnumerable<UserResponse>>(users);
+
+            foreach (var user in mappedUsers)
+            {
+                var activityIds = _context.Interests.Where(i => i.UserId == user.Id).Select(i => i.ActivityId);
+                user.Interests = _context.Activities.Where(a => activityIds.Contains(a.Id)).Select(a => new InterestResponse { Id = a.Id, Label = a.Label }).ToList();
+            }
+
+            //return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
+            return Ok(mappedUsers);
         }
 
         // GET: Get a specific user by id
         [HttpGet("{id:int}")]
-        public async Task<ActionResult> GetById(int id)
+        public async Task<ActionResult> GetUserDetails(int id)
         {
-            var user = await _userService.GetById(id);
+            var user = await _userService.GetUserDetails(id);
 
             if (User.Id == id)
             {
                 return Ok(_mapper.Map<LoginResponse>(user));
             }
 
-            return Ok(_mapper.Map<UserDetailsResponse>(user));
+            var test = _mapper.Map<UserDetailsResponse>(user);
+
+            var activityIds = _context.Interests.Where(i => i.UserId == test.Id).Select(i => i.ActivityId);
+            test.Interests = _context.Activities.Where(a => activityIds.Contains(a.Id)).Select(a => new InterestResponse { Id = a.Id, Label = a.Label }).ToList();
+
+            //return Ok(_mapper.Map<UserDetailsResponse>(user));
+            return Ok(test);
         }
 
         // PUT: Update user details
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<UserResponse>> Update(int id, [FromBody]UpdateRequest model)
+        public async Task<ActionResult<UserResponse>> Update(int id, [FromBody] UpdateRequest model)
         {
             // Users can update their own data and admins can update any user's data
             if (id != User.Id && User.Role != Role.Admin)
