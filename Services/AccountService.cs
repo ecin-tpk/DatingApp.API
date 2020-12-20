@@ -298,7 +298,10 @@ namespace DatingApp.API.Services
 
             _context.Users.Update(user);
 
-            await _context.SaveChangesAsync();
+            if(await _context.SaveChangesAsync() <= 0)
+            {
+                throw new AppException("Failed to reset password");
+            }
         }
 
         // Update password
