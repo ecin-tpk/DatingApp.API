@@ -81,7 +81,7 @@ namespace DatingApp.API.Controllers
             return Ok(new { message = "Verification successful, you can now login" });
         }
 
-        // POST: Forgot password
+        // POST: Forgot password (when user forgot their password they send email to /account/forgot-password then we send an email that contains a token to reset their password)
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
         {
@@ -90,7 +90,7 @@ namespace DatingApp.API.Controllers
             return Ok(new { message = "Please check your email for password reset instructions" });
         }
 
-        // POST: Reset password (when user forgot their password they send email to /account/forgot-password then we send an email that contains a token to verify
+        // POST: Reset password 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
         {

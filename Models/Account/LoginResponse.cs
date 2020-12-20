@@ -34,6 +34,7 @@ namespace DatingApp.API.Models.Account
         public string EyeColor { get; set; }
         public string LiveWith { get; set; }
         public string Children { get; set; }
+        public string FamilyPlan { get; set; }
         public string Smoking { get; set; }
         public string Drinking { get; set; }
         public bool HideAge { get; set; }
