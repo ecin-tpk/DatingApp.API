@@ -23,7 +23,8 @@ namespace DatingApp.API.Services
     public interface IAccountService
     {
         Task Register(RegisterRequest model, string origin);
-        void VerifyEmail(string token);
+        Task ResendVerificationEmail(ForgotPasswordRequest model);
+        Task VerifyEmail(string token);
         Task<LoginResponse> Login(LoginRequest model, string ipAddress, DeviceDetector deviceDetector);
         Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector);
         Task<LoginResponse> GoogleLogin(GoogleLoginRequest model, string ipAddress, DeviceDetector deviceDetector, string origin);
@@ -85,26 +86,43 @@ namespace DatingApp.API.Services
             _emailService.SendVerificationEmail(userToCreate, origin);
         }
 
+        // Resend verification email
+        public async Task ResendVerificationEmail(ForgotPasswordRequest model)
+        {
+            if (!await _context.Users.AnyAsync(u => u.Email == model.Email))
+            {
+                throw new AppException("Email does not exist");
+            }
+
+            var user = await _context.Users
+                .Select(u => new User { Email = u.Email, VerificationToken = u.VerificationToken, Verified = u.Verified })
+                .FirstOrDefaultAsync(u => u.Email == model.Email);
+            if (user.IsVerified)
+            {
+                throw new AppException("Email is already verified");
+            }
+
+            _emailService.SendVerificationEmail(user, null);
+        }
+
         // Login
         public async Task<LoginResponse> Login(LoginRequest model, string ipAddress, DeviceDetector deviceDetector)
         {
             model.Email = model.Email.ToLower();
-
             try
             {
-                var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.Email == model.Email);
+                var user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.Email == model.Email && u.FacebookUID == null);
+                if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
+                {
+                    throw new AppException("Email or password is incorrect");
+                }
                 if (user.Role != Role.Admin && model.Role == Role.Admin)
                 {
                     throw new AppException("Not eligible");
-
                 }
                 if (!user.IsVerified)
                 {
                     throw new AppException("Please verify your email before logging in");
-                }
-                if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
-                {
-                    throw new AppException("Email or password is incorrect");
                 }
                 if (user.Status == Status.Disabled || user.Status == Status.Deleted)
                 {
@@ -112,7 +130,6 @@ namespace DatingApp.API.Services
                 }
 
                 var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);
-
                 user.RefreshTokens.Add(refreshToken);
 
                 _context.Update(user);
@@ -120,14 +137,13 @@ namespace DatingApp.API.Services
                 await _context.SaveChangesAsync();
 
                 var jwtToken = GenerateJwtToken(user);
-
                 var response = _mapper.Map<LoginResponse>(user);
                 response.JwtToken = jwtToken;
                 response.RefreshToken = refreshToken.Token;
 
                 return response;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -136,42 +152,50 @@ namespace DatingApp.API.Services
         // Login with facebook
         public async Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector)
         {
+            User user = null;
+
             var facebookUser = await _facebookService.GetUser(model);
-
-            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
-
-            // Create new user in db to store needed info
-            if (user == null)
+            if (facebookUser.Existing)
+            {
+                user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
+            }
+            else
             {
                 var userToCreate = _mapper.Map<User>(facebookUser);
-                userToCreate.Created = DateTime.Now;
+                userToCreate.Verified = DateTime.Now;
                 userToCreate.Role = Role.User;
                 userToCreate.Status = Status.Active;
-                userToCreate.Verified = DateTime.Now;
+                userToCreate.Created = DateTime.Now;
 
                 _context.Users.Add(userToCreate);
 
-                // Add photo url after saving to db to have user id
                 if (await _context.SaveChangesAsync() > 0)
                 {
-                    var createdUser = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
+                    user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
 
-                    var photo = new Photo
+                    if(facebookUser.Picture != null)
                     {
-                        Url = facebookUser.Picture,
-                        DateAdded = DateTime.Now
-                    };
+                        var photo = new Photo
+                        {
+                            Url = facebookUser.Picture,
+                            DateAdded = DateTime.Now
+                        };
+                        user.Photos.Add(photo);
 
-                    createdUser.Photos.Add(photo);
-
-                    await _context.SaveChangesAsync();
+                        if (await _context.SaveChangesAsync() <= 0)
+                        {
+                            throw new AppException("Registered with Facebook successfully, but failed to add photo");
+                        }
+                    }
                 }
-
-                user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(x => x.FacebookUID == facebookUser.FacebookUID);
             }
 
             var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);
+            user.RefreshTokens.Add(refreshToken);
 
+            _context.Update(user);
+
+            await _context.SaveChangesAsync();
             var jwtToken = GenerateJwtToken(user);
 
             var response = _mapper.Map<LoginResponse>(user);
@@ -246,9 +270,9 @@ namespace DatingApp.API.Services
         }
 
         // Verify email after register
-        public async void VerifyEmail(string token)
+        public async Task VerifyEmail(string token)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.VerificationToken == token);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
             if (user == null)
             {
                 throw new AppException("Verfication failed");
@@ -257,7 +281,10 @@ namespace DatingApp.API.Services
             user.VerificationToken = null;
 
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            if (await _context.SaveChangesAsync() <= 0)
+            {
+                throw new AppException("Failed to verify");
+            };
         }
 
         // Forgot password
@@ -298,7 +325,7 @@ namespace DatingApp.API.Services
 
             _context.Users.Update(user);
 
-            if(await _context.SaveChangesAsync() <= 0)
+            if (await _context.SaveChangesAsync() <= 0)
             {
                 throw new AppException("Failed to reset password");
             }
@@ -325,73 +352,6 @@ namespace DatingApp.API.Services
             _context.Users.Update(userInDb);
 
             await _context.SaveChangesAsync();
-        }
-
-        // Hash password
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            }
-        }
-
-        // Generate random string for verify token and refersh token
-        private string RandomTokenString()
-        {
-            using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
-            {
-                var randomBytes = new byte[40];
-                rngCryptoServiceProvider.GetBytes(randomBytes);
-
-                return BitConverter.ToString(randomBytes).Replace("-", "");
-            }
-        }
-
-        // Generate jwt token
-        private string GenerateJwtToken(User user)
-        {
-            var claims = new[]
-            {
-                new Claim("id", user.Id.ToString())
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Secret));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
-                SigningCredentials = creds
-            };
-
-            var tokenHandlder = new JwtSecurityTokenHandler();
-
-            var token = tokenHandlder.CreateToken(tokenDescriptor);
-
-            return tokenHandlder.WriteToken(token);
-        }
-
-        // Verifiy password hash
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                for (int i = 0; i < computedHash.Length; i++)
-                {
-                    if (computedHash[i] != passwordHash[i])
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
 
         // Use refresh token to get a new jwt token (auto login)
@@ -447,6 +407,74 @@ namespace DatingApp.API.Services
             {
                 throw new AppException("Invalid token");
             }
+        }
+
+        #region Helpers
+        // Hash password
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        // Verifiy password hash
+        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512(passwordSalt))
+            {
+                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                for (int i = 0; i < computedHash.Length; i++)
+                {
+                    if (computedHash[i] != passwordHash[i])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // Generate random string for verify token and refersh token
+        private string RandomTokenString()
+        {
+            using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
+            {
+                var randomBytes = new byte[40];
+                rngCryptoServiceProvider.GetBytes(randomBytes);
+
+                return BitConverter.ToString(randomBytes).Replace("-", "");
+            }
+        }
+
+        // Generate jwt token
+        private string GenerateJwtToken(User user)
+        {
+            var claims = new[]
+            {
+                new Claim("id", user.Id.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Secret));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(1),
+                SigningCredentials = creds
+            };
+
+            var tokenHandlder = new JwtSecurityTokenHandler();
+
+            var token = tokenHandlder.CreateToken(tokenDescriptor);
+
+            return tokenHandlder.WriteToken(token);
         }
 
         // Get refresh token (if valid)
@@ -505,5 +533,6 @@ namespace DatingApp.API.Services
 
             return refreshToken;
         }
+        #endregion
     }
 }

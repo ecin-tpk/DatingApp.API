@@ -1,10 +1,10 @@
-﻿using System;
+﻿using DatingApp.API.Entities;
+using System;
 namespace DatingApp.API.Helpers.RequestParams
 {
-    public class ReportParams: PaginationParams
+    public class ReportParams : PaginationParams
     {
-        public ReportParams(): base(10)
-        {
-        }
+        public ReportStatus Status { get; set; }
+        public ReportParams() : base(10) { }
     }
 }

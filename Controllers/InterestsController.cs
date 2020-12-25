@@ -23,6 +23,11 @@ namespace DatingApp.API.Controllers
         }
 
         // GET: Get all interests
+        [HttpGet("available-subjects")]
+        public IActivityService GetAll()
+        {
+            return null;
+        }
 
         // GET: Get interests of user
         [HttpGet]

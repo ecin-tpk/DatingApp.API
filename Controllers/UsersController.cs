@@ -69,6 +69,16 @@ namespace DatingApp.API.Controllers
             return Ok(mappedUsers);
         }
 
+
+        // GET: Get simple info (name, photoUrl)
+        [HttpGet("{id:int}/simple")]
+        public async Task<ActionResult> GetNameAndPhotoUrl(int id)
+        {
+            var user = await _userService.GetSimpleUser(id);
+
+            return Ok(user);
+        }
+
         // GET: Get a specific user by id
         [HttpGet("{id:int}")]
         public async Task<ActionResult> GetUserDetails(int id)

@@ -131,6 +131,11 @@ namespace DatingApp.API.Services
         // Get simple user
         public async Task<SimpleUserResponse> GetSimpleUser(int id)
         {
+            if(!await _context.Users.AnyAsync(u => u.Id == id))
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+
             var photos = await _context.Photos.Where(p => p.UserId == id && p.Order == 0).Select(p => new Photo { Url = p.Url }).ToListAsync();
 
             var user = await _context.Users

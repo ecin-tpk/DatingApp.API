@@ -56,7 +56,7 @@ namespace DatingApp.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMessages(int userId, [FromQuery] MessageParams messageParams)
         {
-            if (userId != User.Id)
+            if (userId != User.Id && User.Role != Role.Admin)
             {
                 return Unauthorized(new { message = "Unauthorized" });
             }

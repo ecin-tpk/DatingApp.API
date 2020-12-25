@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatingApp.API.Entities;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace DatingApp.API.Models.Reports
@@ -7,6 +8,9 @@ namespace DatingApp.API.Models.Reports
     {
         public int SenderId { get; set; }
         public int UserId { get; set; }
+
+        [EnumDataType(typeof(ReportStatus))]
+        public string Status { get; set; }
 
         [Required]
         public string ReportedFor { get; set; }

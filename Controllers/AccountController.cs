@@ -106,7 +106,7 @@ namespace DatingApp.API.Controllers
         {
             // Users can update their own password and admins can update any user's password
             if (id != User.Id && User.Role != Role.Admin)
-            {   
+            {
                 return Unauthorized(new { message = "Unauthorized" });
             }
 
@@ -153,7 +153,16 @@ namespace DatingApp.API.Controllers
             return Ok(new { message = "Token revoked" });
         }
 
-        // Validate reset token
+        // POST: Resend verification email
+        [HttpPost("resend-verification-email")]
+        public async Task<IActionResult> ResendVerificationEmail(ForgotPasswordRequest model)
+        {
+            await _accountService.ResendVerificationEmail(model);
+
+            return Ok(new { message = "Email sent, please check your email for verification instructions" });
+        }
+
+        // POST: Validate reset token (to verify that password reset link is still valid)
         [HttpPost("validate-reset-token")]
         public async Task<IActionResult> ValidateResetToken(ValidateResetTokenRequest model)
         {

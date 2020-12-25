@@ -15,31 +15,16 @@ namespace DatingApp.API.Controllers
     [Authorize]
     public class ReportsController : BaseController
     {
-        private readonly IMapper _mapper;
         private readonly IReportService _reportService;
         private readonly IUserService _userService;
         private readonly IHubContext<NotificationHub> _notificationHub;
 
         public ReportsController(IMapper mapper, IReportService reportService, IUserService userService, IHubContext<NotificationHub> notificationHub)
         {
-            _mapper = mapper;
             _reportService = reportService;
             _userService = userService;
             _notificationHub = notificationHub;
         }
-
-        //// GET: Get message by id
-        //[HttpGet("{id}", Name = "GetReportById")]
-        //public async Task<IActionResult> GetById(int userId, int id)
-        //{
-        //    var message = await _reportService.GetById(id);
-        //    if (message == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return Ok(message);
-        //}
 
         // POST: Send report
         [HttpPost]
@@ -59,12 +44,5 @@ namespace DatingApp.API.Controllers
 
             return Ok("User reported successfully");
         }
-
-        // DELETE: Delete report
-        //[HttpDelete]
-        //public async Task<IActionResult> DeleteReport(int userId, NewReportRequest model)
-        //{
-        //    return Ok();
-        //}
     }
 }

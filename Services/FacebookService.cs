@@ -36,28 +36,33 @@ namespace DatingApp.API.Services
         // Get user
         public async Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model)
         {
-            var result = await GetAsync<dynamic>(model.FacebookToken, model.FacebookUserId, "fields=name,email,birthday,location,gender,picture.width(500)");
+            var result = await GetAsync<dynamic>(model.FacebookToken, model.FacebookUID, "fields=name,email,birthday,location,gender,picture.width(500)");
             if (result == null)
             {
-                throw new AppException("Invalid credentials");
+                throw new AppException("Invalid Facebook credentials");
             }
 
-            var email = (string)result.email;
-
-            var existingUserWithSameEmail = await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
-
-            var account = new FacebookLoginResponse()
+            if (await _context.Users.AnyAsync(u => u.FacebookUID == model.FacebookUID))
             {
-                Email = existingUserWithSameEmail == null ? result.email : null,
+                return new FacebookLoginResponse
+                {
+                    Existing = true
+                };
+            }
+
+            var facebookUser = new FacebookLoginResponse()
+            {
+                Email = result.email ?? null,
                 Name = result.name,
-                Gender = result.gender,
-                DateOfBirth = result.birthday,
-                City = result.location.name,
-                FacebookUID = model.FacebookUserId,
-                Picture = result.picture.data.url
+                Gender = result.gender ?? null,
+                DateOfBirth = result.birthday ?? null,
+                Location = result.location != null ? result.location.name : null,
+                FacebookUID = model.FacebookUID,
+                Picture = result.picture.data.url,
+                Existing = false
             };
 
-            return account;
+            return facebookUser;
         }
 
         // Helpers

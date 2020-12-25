@@ -29,6 +29,7 @@ namespace DatingApp.API.Migrations
                     SenderId = table.Column<int>(nullable: false),
                     UserId = table.Column<int>(nullable: false),
                     ReportedFor = table.Column<string>(nullable: true),
+                    Status = table.Column<int>(nullable: false),
                     ReportSent = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -85,19 +86,6 @@ namespace DatingApp.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Values",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Values", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -283,9 +271,6 @@ namespace DatingApp.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Reports");
-
-            migrationBuilder.DropTable(
-                name: "Values");
 
             migrationBuilder.DropTable(
                 name: "Activities");

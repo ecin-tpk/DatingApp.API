@@ -9,7 +9,7 @@ namespace DatingApp.API.Services
         Task Create(Activity model);
     }
     #endregion
-    public class ActivityService
+    public class ActivityService: IActivityService
     {
         public Task Create(Activity model)
         {
