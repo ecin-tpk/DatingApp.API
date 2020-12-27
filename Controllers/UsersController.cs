@@ -35,7 +35,6 @@ namespace DatingApp.API.Controllers
         public async Task<IActionResult> GetPagination([FromQuery] UserParams userParams)
         {
             // TODO: Check toppicks
-
             userParams.UserId = User.Id;
             userParams.Name = null;
             userParams.OrderBy = null;

@@ -51,6 +51,9 @@ namespace DatingApp.API.Models.Users
         public string Smoking { get; set; }
         public string Drinking { get; set; }
 
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
         public bool HideAge { get; set; }
 
         // Replace empty string with null to ensure validation works

@@ -60,7 +60,7 @@ namespace DatingApp.API.Services
 
             if (userParams.ForCards)
             {
-                users = GetUsersForCards(users, userParams);
+                users = await GetUsersForCards(users, userParams);
 
                 return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
@@ -131,7 +131,7 @@ namespace DatingApp.API.Services
         // Get simple user
         public async Task<SimpleUserResponse> GetSimpleUser(int id)
         {
-            if(!await _context.Users.AnyAsync(u => u.Id == id))
+            if (!await _context.Users.AnyAsync(u => u.Id == id))
             {
                 throw new KeyNotFoundException("User not found");
             }
@@ -163,7 +163,8 @@ namespace DatingApp.API.Services
         // Update user info
         public async Task<UpdateResponse> Update(int id, UpdateRequest model)
         {
-            var userFromRepo = await GetUserWithPhotos(id);
+            //var userFromRepo = await GetUserWithPhotos(id);
+            var userFromRepo = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             //// Validate on update email
             //if (userFromRepo.Email != model.Email && await _context.Users.AnyAsync(u => u.Email == model.Email))
@@ -308,7 +309,7 @@ namespace DatingApp.API.Services
         // Helpers
 
         // Get users for card stack
-        private IQueryable<User> GetUsersForCards(IQueryable<User> users, UserParams userParams)
+        private async Task<IQueryable<User>> GetUsersForCards(IQueryable<User> users, UserParams userParams)
         {
             // Don't show profiles that i liked, unmatched or reported
             var reported = _context.Reports.Where(r => r.SenderId == userParams.UserId).Select(r => r.UserId);
@@ -317,10 +318,7 @@ namespace DatingApp.API.Services
                    l.LikerId == userParams.UserId)
                .Select(l => l.LikeeId);
             var dontShow = liked.Union(reported);
-
             users = users
-                //.Include(u => u.Activities)
-                //.ThenInclude(u => u.Activity)
                 .Where(u => !dontShow.Contains(u.Id));
 
             if (userParams.Gender == "male" || userParams.Gender == "female")
@@ -334,6 +332,16 @@ namespace DatingApp.API.Services
 
                 users = users.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
             }
+
+            // Check distance
+            var myLatitude = await _context.Users.Where(u => u.Id == userParams.UserId).Select(u => u.Latitude).FirstOrDefaultAsync();
+            var myLongitude = await _context.Users.Where(u => u.Id == userParams.UserId).Select(u => u.Longitude).FirstOrDefaultAsync();
+            var inDistance = users.Select(u => new
+            {
+                Id = u.Id,
+                Distance = CalculateDistance(u.Latitude, u.Longitude, myLatitude, myLongitude)
+            }).ToList().Where(u => u.Distance <= 3000).Select(u => u.Id);
+            users = users.Where(u => inDistance.Contains(u.Id));
 
             return users.OrderBy(u => u.Created);
         }
@@ -349,7 +357,6 @@ namespace DatingApp.API.Services
             {
                 users = users.Where(u => userParams.Verification == "true" ? u.Verified.HasValue : !u.Verified.HasValue);
             }
-
             if (userParams.Gender == "male" || userParams.Gender == "female")
             {
                 users = users.Where(u => u.Gender == userParams.Gender);
@@ -460,6 +467,17 @@ namespace DatingApp.API.Services
 
             TimeSpan timeSpan = now.Subtract(dateOfBirth);
             return timeSpan.Days - leapYears;
+        }
+
+        private static double CalculateDistance(double latitude, double longitude, double myLatitude, double myLongitude)
+        {
+            var d1 = myLatitude * (Math.PI / 180.0);
+            var num1 = myLongitude * (Math.PI / 180.0);
+            var d2 = latitude * (Math.PI / 180.0);
+            var num2 = longitude * (Math.PI / 180.0) - num1;
+            var d3 = Math.Pow(Math.Sin((d2 - d1) / 2.0), 2.0) +
+                     Math.Cos(d1) * Math.Cos(d2) * Math.Pow(Math.Sin(num2 / 2.0), 2.0);
+            return 6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)));
         }
     }
 }

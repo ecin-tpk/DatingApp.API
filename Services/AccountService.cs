@@ -157,7 +157,7 @@ namespace DatingApp.API.Services
             var facebookUser = await _facebookService.GetUser(model);
             if (facebookUser.Existing)
             {
-                user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
+                user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.FacebookUID == model.FacebookUID);
             }
             else
             {

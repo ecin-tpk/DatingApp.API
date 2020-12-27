@@ -36,9 +36,17 @@ namespace DatingApp.API.Helpers
                     {
                         return false;
                     }
-
                     // Ignore null role
                     if (x.DestinationMember.Name == "Role" && src.Role == null)
+                    {
+                        return false;
+                    }
+                    // Ignore null lat long
+                    if (x.DestinationMember.Name == "Latitude" && src.Latitude == null)
+                    {
+                        return false;
+                    }
+                    if (x.DestinationMember.Name == "Longitude" && src.Longitude == null)
                     {
                         return false;
                     }
