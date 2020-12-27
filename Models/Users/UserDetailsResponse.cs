@@ -15,5 +15,9 @@ namespace DatingApp.API.Models.Users
         public string FamilyPlan { get; set; }
         public string Smoking { get; set; }
         public string Drinking { get; set; }
+
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double Distance { get; set; }
     }
 }

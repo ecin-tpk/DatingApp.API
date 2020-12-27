@@ -19,6 +19,11 @@ namespace DatingApp.API.Models.Users
         public string JobTitle { get; set; }
         public string School { get; set; }
         public string Company { get; set; }
+
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double Distance { get; set; }
+
         public List<InterestResponse> Interests { get; set; }
         //public ICollection<InterestForCardResponse> Activities { get; set; }
         public ICollection<PhotoResponse> Photos { get; set; }

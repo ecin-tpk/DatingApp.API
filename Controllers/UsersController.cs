@@ -62,6 +62,8 @@ namespace DatingApp.API.Controllers
             {
                 var activityIds = _context.Interests.Where(i => i.UserId == user.Id).Select(i => i.ActivityId);
                 user.Interests = _context.Activities.Where(a => activityIds.Contains(a.Id)).Select(a => new InterestResponse { Id = a.Id, Label = a.Label }).ToList();
+
+                user.Distance = await _userService.GetDistance(user.Latitude, user.Longitude, userParams.UserId);
             }
 
             //return Ok(_mapper.Map<IEnumerable<UserResponse>>(users));
@@ -93,6 +95,8 @@ namespace DatingApp.API.Controllers
 
             var activityIds = _context.Interests.Where(i => i.UserId == test.Id).Select(i => i.ActivityId);
             test.Interests = _context.Activities.Where(a => activityIds.Contains(a.Id)).Select(a => new InterestResponse { Id = a.Id, Label = a.Label }).ToList();
+
+            test.Distance = await _userService.GetDistance(test.Latitude, test.Longitude, User.Id);
 
             //return Ok(_mapper.Map<UserDetailsResponse>(user));
             return Ok(test);

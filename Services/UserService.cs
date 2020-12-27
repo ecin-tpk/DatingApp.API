@@ -32,6 +32,8 @@ namespace DatingApp.API.Services
         Task<int[]> GetTotalUsersPerMonth(int year);
         Task<int[]> GetUsersByAge(int year);
         List<int> GetAdminIds();
+
+        Task<double> GetDistance(double latitude, double longitude, int userId);
     }
     #endregion
 
@@ -304,6 +306,21 @@ namespace DatingApp.API.Services
         public List<int> GetAdminIds()
         {
             return _context.Users.Where(u => u.Role == Role.Admin).Select(u => u.Id).ToList();
+        }
+
+        // Get distance in met
+        public async Task<double> GetDistance(double latitude, double longitude, int userId)
+        {
+            var myLatitude = await _context.Users.Where(u => u.Id == userId).Select(u => u.Latitude).FirstOrDefaultAsync();
+            var myLongitude = await _context.Users.Where(u => u.Id == userId).Select(u => u.Longitude).FirstOrDefaultAsync();
+
+            var d1 = myLatitude * (Math.PI / 180.0);
+            var num1 = myLongitude * (Math.PI / 180.0);
+            var d2 = latitude * (Math.PI / 180.0);
+            var num2 = longitude * (Math.PI / 180.0) - num1;
+            var d3 = Math.Pow(Math.Sin((d2 - d1) / 2.0), 2.0) +
+                     Math.Cos(d1) * Math.Cos(d2) * Math.Pow(Math.Sin(num2 / 2.0), 2.0);
+            return Math.Round(6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)) / 1000), 2);
         }
 
         // Helpers
