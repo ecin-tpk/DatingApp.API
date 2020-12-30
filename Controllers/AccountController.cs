@@ -87,7 +87,7 @@ namespace DatingApp.API.Controllers
         {
             await _accountService.ForgotPassword(model, Request.Headers["orgin"]);
 
-            return Ok(new { message = "Please check your email for password reset instructions" });
+            return Ok(new { message = "Check your email for instructions" });
         }
 
         // POST: Reset password 

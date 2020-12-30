@@ -36,12 +36,15 @@ namespace DatingApp.API.Services
         // Get user
         public async Task<FacebookLoginResponse> GetUser(FacebookLoginRequest model)
         {
-            var result = await GetAsync<dynamic>(model.FacebookToken, model.FacebookUID, "fields=name,email,birthday,location,gender,picture.width(500)");
+            var result = await GetAsync<dynamic>(
+                model.FacebookToken,
+                model.FacebookUID,
+                "fields=name,email,birthday,location,gender,picture.width(500)"
+            );
             if (result == null)
             {
                 throw new AppException("Invalid Facebook credentials");
             }
-
             if (await _context.Users.AnyAsync(u => u.FacebookUID == model.FacebookUID))
             {
                 return new FacebookLoginResponse
@@ -49,7 +52,6 @@ namespace DatingApp.API.Services
                     Existing = true
                 };
             }
-
             var facebookUser = new FacebookLoginResponse()
             {
                 Email = result.email ?? null,
@@ -61,7 +63,6 @@ namespace DatingApp.API.Services
                 Picture = result.picture.data.url,
                 Existing = false
             };
-
             return facebookUser;
         }
 

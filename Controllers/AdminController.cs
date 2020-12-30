@@ -141,7 +141,7 @@ namespace DatingApp.API.Controllers
         [HttpGet("users/users-by-age/{year:int}")]
         public async Task<IActionResult> GetUsersByAge(int year)
         {
-            var usersByAge = await _userService.GetUsersByAge(year);
+            var usersByAge = await _userService.CountUsersByAge(year);
 
             return Ok(usersByAge);
         }

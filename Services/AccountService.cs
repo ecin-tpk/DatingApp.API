@@ -112,13 +112,13 @@ namespace DatingApp.API.Services
             try
             {
                 var user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.Email == model.Email && u.FacebookUID == null);
-                if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
-                {
-                    throw new AppException("Email or password is incorrect");
-                }
                 if (user.Role != Role.Admin && model.Role == Role.Admin)
                 {
                     throw new AppException("Not eligible");
+                }
+                if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
+                {
+                    throw new AppException("Email or password is incorrect");
                 }
                 if (!user.IsVerified)
                 {
@@ -173,7 +173,7 @@ namespace DatingApp.API.Services
                 {
                     user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.FacebookUID == facebookUser.FacebookUID);
 
-                    if(facebookUser.Picture != null)
+                    if (facebookUser.Picture != null)
                     {
                         var photo = new Photo
                         {
@@ -290,8 +290,11 @@ namespace DatingApp.API.Services
         // Forgot password
         public async Task ForgotPassword(ForgotPasswordRequest model, string origin)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
-            if (user == null) return;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.FacebookUID == null);
+            if (user == null)
+            {
+                throw new AppException("This email is not registered");
+            };
 
             // Create a reset token that expires after 1 day
             user.ResetToken = RandomTokenString();
@@ -307,7 +310,7 @@ namespace DatingApp.API.Services
         // Reset password in case user forgot their password
         public async Task ResetPassword(ResetPasswordRequest model)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.ResetToken == model.Token && u.ResetTokenExpires > DateTime.Now);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetToken == model.Token && u.ResetTokenExpires > DateTime.Now);
             if (user == null)
             {
                 throw new AppException("Invalid token");
@@ -334,7 +337,7 @@ namespace DatingApp.API.Services
         // Update password
         public async Task UpdatePassword(int id, UpdatePasswordRequest model)
         {
-            var userInDb = await _context.Users.SingleOrDefaultAsync(u => u.Id == id);
+            var userInDb = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (!VerifyPasswordHash(model.CurrentPassword, userInDb.PasswordHash, userInDb.PasswordSalt))
             {
                 throw new AppException("Wrong password");
@@ -480,10 +483,10 @@ namespace DatingApp.API.Services
         // Get refresh token (if valid)
         private async Task<(RefreshToken, User)> GetRefreshToken(string token)
         {
-            var user = await _context.Users.Include(u => u.Photos).SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
             if (user == null)
             {
-                throw new AppException("Invalid token");
+                throw new AppException("Authentication failed");
             }
 
             var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
@@ -495,7 +498,7 @@ namespace DatingApp.API.Services
 
                 await _context.SaveChangesAsync();
 
-                throw new AppException("Refresh token expired. Please login again");
+                throw new AppException("Authentication failed");
             }
 
             return (refreshToken, user);

@@ -43,8 +43,6 @@ namespace DatingApp.API.Services
         {
             var user = await _context.Users
                 .Include(u => u.MessagesSent)
-                //.ThenInclude(m => m.Recipient)
-                //.ThenInclude(u => u.Photos)
                 .Include(u => u.MessagesReceived)
                 .FirstOrDefaultAsync(u => u.Id == messageParams.UserId);
 

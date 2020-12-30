@@ -30,7 +30,7 @@ namespace DatingApp.API.Services
         Task<UserResponse> Create(NewUserRequest model);
         Task<int[]> GetNewUsersPerMonth(int year);
         Task<int[]> GetTotalUsersPerMonth(int year);
-        Task<int[]> GetUsersByAge(int year);
+        Task<int[]> CountUsersByAge(int year);
         List<int> GetAdminIds();
 
         Task<double> GetDistance(double latitude, double longitude, int userId);
@@ -252,32 +252,22 @@ namespace DatingApp.API.Services
         }
 
         // Users by age
-        public async Task<int[]> GetUsersByAge(int year)
+        public async Task<int[]> CountUsersByAge(int year)
         {
             var thisYear = DateTime.Now.Year;
-
             var users = _context.Users.Where(u => u.Role != Role.Admin);
-
             var total = await users.CountAsync();
-
-            // 18 - 29
-            var young = await users.Where(u => u.Created.Year <= year && thisYear - u.DateOfBirth.Value.Year < 29).CountAsync();
-
-            // 50+
-            var old = await users.Where(u => u.Created.Year <= year && thisYear - u.DateOfBirth.Value.Year > 50).CountAsync();
-
-            // 30 - 50
-
-            var percentage = new int[3];
-            //percentage[0] = Convert.ToInt16(Math.Round(Convert.ToDecimal(young / total * 100), MidpointRounding.AwayFromZero));
-            //percentage[2] = Convert.ToInt16(Math.Round(Convert.ToDecimal(old / total * 100), MidpointRounding.AwayFromZero));
-            //percentage[1] = 100 - percentage[0] - percentage[2];
-
-            percentage[0] = young;
-            percentage[2] = old;
-            percentage[1] = total - young - old;
-
-            return percentage;
+            var young = await users.Where(u =>
+                u.Created.Year <= year &&
+                thisYear - u.DateOfBirth.Value.Year < 29).CountAsync();
+            var old = await users.Where(u =>
+                u.Created.Year <= year &&
+                thisYear - u.DateOfBirth.Value.Year > 50).CountAsync();
+            var counts = new int[3];
+            counts[0] = young;
+            counts[2] = old;
+            counts[1] = total - young - old;
+            return counts;
         }
 
         // Create new user (admin)
@@ -450,7 +440,6 @@ namespace DatingApp.API.Services
                     users = users.OrderBy(u => u.Created);
                     break;
             }
-
             return users;
         }
 
@@ -486,7 +475,12 @@ namespace DatingApp.API.Services
             return timeSpan.Days - leapYears;
         }
 
-        private static double CalculateDistance(double latitude, double longitude, double myLatitude, double myLongitude)
+        private static double CalculateDistance(
+            double latitude,
+            double longitude,
+            double myLatitude,
+            double myLongitude
+        )
         {
             var d1 = myLatitude * (Math.PI / 180.0);
             var num1 = myLongitude * (Math.PI / 180.0);
