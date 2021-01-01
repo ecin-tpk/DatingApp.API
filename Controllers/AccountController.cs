@@ -178,6 +178,22 @@ namespace DatingApp.API.Controllers
             return Ok();
         }
 
+        // POST: Revoke FCM token
+        [Authorize]
+        [HttpPost("revoke-fcm-token")]
+        public async Task<IActionResult> RevokeFcmToken(TokenRequest model)
+        {
+            // Admin can revoke any token while users can only revoke their ones
+            if (!User.OwnsFcmToken(model.Token) && User.Role != Role.Admin)
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
+
+            await _accountService.RevokeFcmToken(model.Token);
+
+            return Ok(new { message = "FCM token deleted" });
+        }
+
         // GET: Get list of FCM tokens
         [Authorize]
         [HttpGet("{id:int}/fcm-tokens")]

@@ -1,5 +1,4 @@
-﻿using System;
-namespace DatingApp.API.Models.Account
+﻿namespace DatingApp.API.Models.Account
 {
     public class RevokeTokenRequest
     {

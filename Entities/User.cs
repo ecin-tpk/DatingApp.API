@@ -21,7 +21,7 @@ namespace DatingApp.API.Entities
         public Status Status { get; set; }
         public DateTime Created { get; set; }
         public DateTime? Updated { get; set; }
-            
+
         public string Name { get; set; }
         public string Gender { get; set; }
         public string LookingFor { get; set; }
@@ -64,6 +64,11 @@ namespace DatingApp.API.Entities
         public bool OwnsToken(string token)
         {
             return RefreshTokens?.Find(t => t.Token == token) != null;
+        }
+
+        public bool OwnsFcmToken(string token)
+        {
+            return FcmTokens?.Find(t => t.Token == token) != null;
         }
     }
 }

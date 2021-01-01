@@ -37,6 +37,7 @@ namespace DatingApp.API.Services
 
         Task AddFcmToken(int id, TokenRequest model);
         Task<IEnumerable<string>> GetFcmTokens(int id);
+        Task RevokeFcmToken(string token);
     }
     #endregion
 
@@ -422,6 +423,15 @@ namespace DatingApp.API.Services
             }
         }
 
+        // Revoke FCM token
+        public async Task RevokeFcmToken(string token)
+        {
+            var (fcmToken, user) = await GetFcmToken(token);
+            user.FcmTokens.Remove(fcmToken);
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
         // Get list of FCM tokens
         public async Task<IEnumerable<string>> GetFcmTokens(int id)
         {
@@ -523,6 +533,20 @@ namespace DatingApp.API.Services
             }
 
             return (refreshToken, user);
+        }
+
+        // Get refresh token (if valid)
+        private async Task<(FcmToken, User)> GetFcmToken(string token)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.FcmTokens.Any(t => t.Token == token));
+            if (user == null)
+            {
+                throw new AppException("Authentication failed");
+            }
+
+            var fcmToken = user.FcmTokens.Single(t => t.Token == token);
+
+            return (fcmToken, user);
         }
 
         // Generate refresh token
