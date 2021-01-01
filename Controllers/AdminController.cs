@@ -35,7 +35,6 @@ namespace DatingApp.API.Controllers
             _reportService = reportService;
         }
 
-
         // POST: Login for admin
         [HttpPost("account/login")]
         public async Task<IActionResult> Login(LoginRequest model)

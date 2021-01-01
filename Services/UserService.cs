@@ -320,10 +320,7 @@ namespace DatingApp.API.Services
         {
             // Don't show profiles that i liked, unmatched or reported
             var reported = _context.Reports.Where(r => r.SenderId == userParams.UserId).Select(r => r.UserId);
-            var liked = _context.Likes
-               .Where(l =>
-                   l.LikerId == userParams.UserId)
-               .Select(l => l.LikeeId);
+            var liked = _context.Likes.Where(l => l.LikerId == userParams.UserId).Select(l => l.LikeeId);
             var dontShow = liked.Union(reported);
             users = users
                 .Where(u => !dontShow.Contains(u.Id));
@@ -347,7 +344,7 @@ namespace DatingApp.API.Services
             {
                 Id = u.Id,
                 Distance = CalculateDistance(u.Latitude, u.Longitude, myLatitude, myLongitude)
-            }).ToList().Where(u => u.Distance <= 3000).Select(u => u.Id);
+            }).ToList().Where(u => u.Distance <= userParams.MaxDistance * 1000).Select(u => u.Id);
             users = users.Where(u => inDistance.Contains(u.Id));
 
             return users.OrderBy(u => u.Created);
