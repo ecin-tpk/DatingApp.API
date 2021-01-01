@@ -16,11 +16,11 @@ namespace DatingApp.API.Models.Account
 
         [Required]
         [Compare("Password")]
-        public string ConfirmPassword { get; set; } 
+        public string ConfirmPassword { get; set; }
 
-        //[Required]
-        //[MaxLength(30)]
-        //public string Name { get; set; }
+        [Required]
+        [MaxLength(30)]
+        public string Name { get; set; }
 
         //[Required]
         //public string Gender { get; set; }
