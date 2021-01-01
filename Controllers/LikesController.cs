@@ -48,7 +48,11 @@ namespace DatingApp.API.Controllers
                     .User(recipientId.ToString())
                     .SendAsync("receiveMatchNotification", await _userService.GetSimpleUser(userId));
 
-                return Ok(await _userService.GetSimpleUser(recipientId));
+                var test = _likeService.GetMatchUserWithFcmTokens(recipientId);
+
+                //return Ok(await _userService.GetSimpleUser(recipientId));                
+                
+                return Ok(await test);
             }   
 
             return Ok();

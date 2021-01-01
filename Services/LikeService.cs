@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
+using DatingApp.API.Models.Likes;
 using DatingApp.API.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,8 @@ namespace DatingApp.API.Services
         Task<IEnumerable<int>> GetMatched(int userId);
         Task<IEnumerable<int>> GetLikedButNotMatched(int userId);
         Task Unmatch(int userId, int recipientId);
+
+        Task<MatchReponse> GetMatchUserWithFcmTokens(int id);
     }
     #endregion
 
@@ -36,7 +39,7 @@ namespace DatingApp.API.Services
         // Like a user
         public async Task<bool> LikeUser(int userId, int recipientId, bool super)
         {
-            if (await _context.Users.SingleOrDefaultAsync(u => u.Id == recipientId) == null)
+            if (!await _context.Users.AnyAsync(u => u.Id == recipientId))
             {
                 throw new AppException("Recipient not found");
             }
@@ -48,18 +51,17 @@ namespace DatingApp.API.Services
             {
                 throw new AppException("You already liked this user");
             }
-
             var like = new Like
             {
                 LikerId = userId,
                 LikeeId = recipientId,
                 Super = super
             };
-
             _context.Add(like);
-
-            await _context.SaveChangesAsync();
-
+            if (await _context.SaveChangesAsync() <= 0)
+            {
+                throw new AppException("Failed to like user");
+            }
             // If they liked me (matched) then return true
             return await GetLike(recipientId, userId);
         }
@@ -143,6 +145,27 @@ namespace DatingApp.API.Services
             var likees = await GetUserLikes(userId, false);
             var matched = await GetMatched(userId);
             return likees.Where(i => !matched.Contains(i));
+        }
+
+        public async Task<MatchReponse> GetMatchUserWithFcmTokens(int id)
+        {
+            var photos = await _context.Photos.Where(p => p.UserId == id && p.Order == 0).Select(p => new Photo { Url = p.Url }).ToListAsync();
+
+            var user = await _context.Users
+                .Where(u => u.Id == id)
+                .Select(u => new User { Id = u.Id, Name = u.Name, Photos = photos })
+                .FirstAsync();
+
+            var test = await _context.Users.FirstAsync(u => u.Id == id);
+
+            var test2 = _mapper.Map<MatchReponse>(test);
+            test2.FcmTokens = test.FcmTokens.Select(t => t.Token);
+            test2.PhotoUrl = await _context.Photos.Where(p => p.UserId == id && p.Order == 0).Select(p => p.Url).FirstOrDefaultAsync();
+
+            var mappedUser = _mapper.Map<MatchReponse>(user);
+
+            //return mappedUser;
+            return test2;
         }
     }
 }

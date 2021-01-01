@@ -4,6 +4,7 @@ using DatingApp.API.Entities;
 using DatingApp.API.Models.Account;
 using DatingApp.API.Models.Admin;
 using DatingApp.API.Models.Interests;
+using DatingApp.API.Models.Likes;
 using DatingApp.API.Models.Messages;
 using DatingApp.API.Models.Photos;
 using DatingApp.API.Models.Reports;
@@ -60,6 +61,9 @@ namespace DatingApp.API.Helpers
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
             CreateMap<FacebookLoginResponse, User>();
             CreateMap<User, SimpleUserResponse>()
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url)); 
+            
+            CreateMap<User, MatchReponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
 
             CreateMap<UploadRequest, Photo>();

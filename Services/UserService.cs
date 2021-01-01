@@ -471,12 +471,7 @@ namespace DatingApp.API.Services
             return timeSpan.Days - leapYears;
         }
 
-        private static double CalculateDistance(
-            double latitude,
-            double longitude,
-            double myLatitude,
-            double myLongitude
-        )
+        private static double CalculateDistance(double latitude, double longitude, double myLatitude, double myLongitude)
         {
             var d1 = myLatitude * (Math.PI / 180.0);
             var num1 = myLongitude * (Math.PI / 180.0);
