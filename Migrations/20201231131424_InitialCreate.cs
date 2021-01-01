@@ -89,6 +89,26 @@ namespace DatingApp.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FcmToken",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<int>(nullable: false),
+                    Token = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FcmToken", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FcmToken_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Interests",
                 columns: table => new
                 {
@@ -222,6 +242,11 @@ namespace DatingApp.API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_FcmToken_UserId",
+                table: "FcmToken",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Interests_ActivityId",
                 table: "Interests",
                 column: "ActivityId");
@@ -254,6 +279,9 @@ namespace DatingApp.API.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "FcmToken");
+
             migrationBuilder.DropTable(
                 name: "Interests");
 

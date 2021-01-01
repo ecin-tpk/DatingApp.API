@@ -32,8 +32,11 @@ namespace DatingApp.API.Services
         Task ResetPassword(ResetPasswordRequest model);
         Task UpdatePassword(int id, UpdatePasswordRequest model);
         Task<LoginResponse> RefreshToken(string token, string ipAddress, DeviceDetector deviceDetector);
-        Task ValidateResetToken(ValidateResetTokenRequest model);
+        Task ValidateResetToken(TokenRequest model);
         Task RevokeToken(string token, string ipAddress);
+
+        Task AddFcmToken(int id, TokenRequest model);
+        Task<IEnumerable<string>> GetFcmTokens(int id);
     }
     #endregion
 
@@ -112,13 +115,13 @@ namespace DatingApp.API.Services
             try
             {
                 var user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.Email == model.Email && u.FacebookUID == null);
-                if (user.Role != Role.Admin && model.Role == Role.Admin)
-                {
-                    throw new AppException("Not eligible");
-                }
                 if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
                 {
                     throw new AppException("Email or password is incorrect");
+                }
+                if (user.Role != Role.Admin && model.Role == Role.Admin)
+                {
+                    throw new AppException("Not eligible");
                 }
                 if (!user.IsVerified)
                 {
@@ -128,19 +131,14 @@ namespace DatingApp.API.Services
                 {
                     throw new AppException($"Account {user.Status.ToString().ToLower()}");
                 }
-
                 var refreshToken = GenerateRefreshToken(ipAddress, deviceDetector);
                 user.RefreshTokens.Add(refreshToken);
-
                 _context.Update(user);
-
                 await _context.SaveChangesAsync();
-
                 var jwtToken = GenerateJwtToken(user);
                 var response = _mapper.Map<LoginResponse>(user);
                 response.JwtToken = jwtToken;
                 response.RefreshToken = refreshToken.Token;
-
                 return response;
             }
             catch (Exception ex)
@@ -402,7 +400,7 @@ namespace DatingApp.API.Services
         }
 
         // Validate reset token
-        public async Task ValidateResetToken(ValidateResetTokenRequest model)
+        public async Task ValidateResetToken(TokenRequest model)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.ResetToken == model.Token && u.ResetTokenExpires > DateTime.Now);
 
@@ -410,6 +408,29 @@ namespace DatingApp.API.Services
             {
                 throw new AppException("Invalid token");
             }
+        }
+
+        // Add FCM token
+        public async Task AddFcmToken(int id, TokenRequest model)
+        {
+            var user = await _context.Users.FirstAsync(u => u.Id == id);
+            user.FcmTokens.Add(new FcmToken { Token = model.Token });
+            _context.Update(user);
+            if (await _context.SaveChangesAsync() <= 0)
+            {
+                throw new AppException("Failed to add FCM token");
+            }
+        }
+
+        // Get list of FCM tokens
+        public async Task<IEnumerable<string>> GetFcmTokens(int id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+            return user.FcmTokens.Select(t => t.Token);
         }
 
         #region Helpers
@@ -508,7 +529,6 @@ namespace DatingApp.API.Services
         private RefreshToken GenerateRefreshToken(string ipAddress, DeviceDetector dd)
         {
             dd.Parse();
-
             var refreshToken = new RefreshToken
             {
                 Token = RandomTokenString(),
@@ -517,7 +537,6 @@ namespace DatingApp.API.Services
                 CreatedByIp = ipAddress,
                 LastActive = DateTime.Now,
             };
-
             if (!dd.IsBot())
             {
                 try
@@ -527,13 +546,11 @@ namespace DatingApp.API.Services
                     var device = dd.GetDeviceName();
                     var brand = dd.GetBrandName();
                     var model = dd.GetModel();
-
                     refreshToken.Device = model + " " + brand + " " + osInfo + " " + device;
                     refreshToken.Application = clientInfo;
                 }
                 catch { }
             }
-
             return refreshToken;
         }
         #endregion

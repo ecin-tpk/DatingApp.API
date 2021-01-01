@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Folder Include="Middleware\" />
-    <Folder Include="Models\Account\" />
     <Folder Include="Models\Photos\" />
     <Folder Include="Helpers\RequestParams\" />
     <Folder Include="Helpers\Attributes\" />

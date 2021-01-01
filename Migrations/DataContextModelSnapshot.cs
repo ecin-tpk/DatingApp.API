@@ -346,6 +346,28 @@ namespace DatingApp.API.Migrations
 
             modelBuilder.Entity("DatingApp.API.Entities.User", b =>
                 {
+                    b.OwnsMany("DatingApp.API.Entities.FcmToken", "FcmTokens", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("Token")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<int>("UserId")
+                                .HasColumnType("INTEGER");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("UserId");
+
+                            b1.ToTable("FcmToken");
+
+                            b1.WithOwner("User")
+                                .HasForeignKey("UserId");
+                        });
+
                     b.OwnsMany("DatingApp.API.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<int>("Id")

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DatingApp.API.Entities;
 using DatingApp.API.Helpers;
 using DatingApp.API.Helpers.Attributes;
 using DatingApp.API.Models.Account;
-using DatingApp.API.Models.Users;
 using DatingApp.API.Services;
 using DeviceDetectorNET;
 using Microsoft.AspNetCore.Http;
@@ -164,11 +162,33 @@ namespace DatingApp.API.Controllers
 
         // POST: Validate reset token (to verify that password reset link is still valid)
         [HttpPost("validate-reset-token")]
-        public async Task<IActionResult> ValidateResetToken(ValidateResetTokenRequest model)
+        public async Task<IActionResult> ValidateResetToken(TokenRequest model)
         {
             await _accountService.ValidateResetToken(model);
 
             return Ok(new { message = "Token is valid" });
+        }
+
+        // POST: Add FCM token
+        [Authorize]
+        [HttpPut("fcm-token")]
+        public async Task<IActionResult> AddFcmToken(TokenRequest model)
+        {
+            await _accountService.AddFcmToken(User.Id, model);
+            return Ok();
+        }
+
+        // GET: Get list of FCM tokens
+        [Authorize]
+        [HttpGet("{id:int}/fcm-tokens")]
+        public async Task<IActionResult> GetFcmTokens(int id)
+        {
+            //if (id != User.Id && User.Role != Role.Admin)
+            //{
+            //    return Unauthorized(new { message = "Unauthorized" });
+            //}
+            var tokens = await _accountService.GetFcmTokens(id);
+            return Ok(tokens);
         }
 
         // Helpers

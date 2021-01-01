@@ -51,6 +51,8 @@ namespace DatingApp.API.Entities
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
+        public List<FcmToken> FcmTokens { get; set; }
+
         public List<RefreshToken> RefreshTokens { get; set; }
         public ICollection<Photo> Photos { get; set; }
         public ICollection<Interest> Activities { get; set; }

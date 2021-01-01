@@ -454,7 +454,6 @@ namespace DatingApp.API.Services
         }
 
         // Calculate age
-
         private static int CalculateAge(DateTime? value)
         {
             var now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);

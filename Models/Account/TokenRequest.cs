@@ -1,9 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace DatingApp.API.Models.Account
 {
-    public class ValidateResetTokenRequest
+    public class TokenRequest
     {
         [Required]
         public string Token { get; set; }
