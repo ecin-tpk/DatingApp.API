@@ -38,6 +38,10 @@ namespace DatingApp.API.Models.Account
         public string Smoking { get; set; }
         public string Drinking { get; set; }
         public bool HideAge { get; set; }
+
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
         public string PhotoUrl { get; set; }
         //public ICollection<InterestForCardResponse> Activities { get; set; }
         public ICollection<PhotoResponse> Photos { get; set; }
