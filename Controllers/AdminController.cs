@@ -24,14 +24,22 @@ namespace DatingApp.API.Controllers
         private readonly IMapper _mapper;
         private readonly IAccountService _accountService;
         private readonly IUserService _userService;
+        private readonly IPhotoService _photoService;
         private readonly IReportService _reportService;
 
-        public AdminController(DataContext context, IMapper mapper, IAccountService accountService, IUserService userService, IReportService reportService)
+        public AdminController(
+            DataContext context,
+            IMapper mapper,
+            IAccountService accountService,
+            IUserService userService,
+            IPhotoService photoService,
+            IReportService reportService)
         {
             _context = context;
             _mapper = mapper;
             _accountService = accountService;
             _userService = userService;
+            _photoService = photoService;
             _reportService = reportService;
         }
 
@@ -51,6 +59,14 @@ namespace DatingApp.API.Controllers
         }
 
         #region Users
+        // GET: Get all users for admin (paginated)
+        [HttpGet("users/count-users/{year:int}")]
+        [Authorize(Role.Admin)]
+        public async Task<IActionResult> CountUsers(int year)
+        {
+            return Ok(await _userService.CountUsers(year));
+        }
+
         // GET: Get all users for admin (paginated)
         [HttpGet("users")]
         [Authorize(Role.Admin)]
@@ -158,6 +174,8 @@ namespace DatingApp.API.Controllers
             {
                 report.UserName = await _context.Users.Where(u => u.Id == report.UserId).Select(u => u.Name).FirstOrDefaultAsync();
                 report.PhotoUrl = await _context.Photos.Where(p => p.UserId == report.UserId && p.Order == 0).Select(p => p.Url).FirstOrDefaultAsync();
+                report.SenderName = await _context.Users.Where(u => u.Id == report.SenderId).Select(u => u.Name).FirstOrDefaultAsync();
+                report.ApprovedCount = (byte)await _context.Reports.Where(r => r.UserId == report.UserId && r.Status == ReportStatus.Approved).CountAsync();
             }
 
             Response.AddPagination(reports.CurrentPage, reports.PageSize, reports.TotalCount, reports.TotalPages);
@@ -183,6 +201,14 @@ namespace DatingApp.API.Controllers
             return Ok(counts);
         }
         #endregion
+
+        // GET: Count number of uploaded photos
+        [HttpGet("photos/count-photos/{milliseconds}")]
+        [Authorize(Role.Admin)]
+        public async Task<IActionResult> CountPhotos(double milliseconds)
+        {
+            return Ok(await _photoService.CountPhotos(milliseconds));
+        }
 
         // DELETE: Delete user report
         [HttpDelete("users/reports/{id:int}")]

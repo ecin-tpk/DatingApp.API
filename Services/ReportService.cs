@@ -20,6 +20,8 @@ namespace DatingApp.API.Services
         Task<int[]> CountByStatus();
         Task UpdateStatus(int id, UpdateStatusRequest model);
         Task Delete(int id);
+
+        Task<IEnumerable<ReportResponse>> GetPaginationTest(ReportParams reportParams);
     }
     #endregion
 
@@ -34,10 +36,29 @@ namespace DatingApp.API.Services
             _mapper = mapper;
         }
 
+        public async Task<IEnumerable<ReportResponse>> GetPaginationTest(ReportParams reportParams)
+        {
+            var reports = GetPagination(reportParams);
+            var mappedReports = _mapper.Map<IEnumerable<ReportResponse>>(reports);
+            foreach (var report in mappedReports)
+            {
+                report.UserName = await _context.Users.Where(u => u.Id == report.UserId).Select(u => u.Name).FirstOrDefaultAsync();
+                report.PhotoUrl = await _context.Photos.Where(p => p.UserId == report.UserId && p.Order == 0).Select(p => p.Url).FirstOrDefaultAsync();
+                report.SenderName = await _context.Users.Where(u => u.Id == report.SenderId).Select(u => u.Name).FirstOrDefaultAsync();
+            }
+
+            return null;
+        }
+
         // Get paginated reports
         public async Task<PagedList<Report>> GetPagination(ReportParams reportParams)
         {
             var reports = _context.Reports.Where(r => r.Status == reportParams.Status).AsQueryable();
+            if (reportParams.Gender == "male" || reportParams.Gender == "female")
+            {
+                reports = reports.Where(r => _context.Users.Where(u => u.Id == r.UserId).Select(u => u.Gender).First() == reportParams.Gender);
+            }
+            reports = reports.OrderByDescending(r => r.ReportSent);
 
             return await PagedList<Report>.CreateAsync(reports, reportParams.PageNumber, reportParams.PageSize);
         }
@@ -49,19 +70,19 @@ namespace DatingApp.API.Services
             {
                 throw new KeyNotFoundException("User not found");
             }
+            if (await _context.Reports.AnyAsync(r => r.SenderId == userId && r.UserId == model.UserId))
+            {
+                return null;
+            }
 
             model.SenderId = userId;
             model.Status = "Pending";
-
             var report = _mapper.Map<Report>(model);
-
             _context.Add(report);
-
             if (await _context.SaveChangesAsync() > 0)
             {
                 return report;
             }
-
             throw new AppException("Failed to send report");
         }
 

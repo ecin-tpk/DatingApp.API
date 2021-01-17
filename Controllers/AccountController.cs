@@ -70,6 +70,15 @@ namespace DatingApp.API.Controllers
             return Ok(response);
         }
 
+        //// POST: Verify email
+        //[HttpPost("verify-email")]
+        //public IActionResult VerifyEmail(TokenRequest model)
+        //{
+        //    _accountService.VerifyEmail(model);
+
+        //    return Ok(new { message = "Verification successful, you can now login" });
+        //}
+
         // POST: Verify email
         [HttpGet("verify-email")]
         public IActionResult VerifyEmail([FromQuery] string token)

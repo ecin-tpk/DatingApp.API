@@ -24,6 +24,7 @@ namespace DatingApp.API.Services
     {
         Task Register(RegisterRequest model, string origin);
         Task ResendVerificationEmail(ForgotPasswordRequest model);
+        Task VerifyEmail(TokenRequest model);
         Task VerifyEmail(string token);
         Task<LoginResponse> Login(LoginRequest model, string ipAddress, DeviceDetector deviceDetector);
         Task<LoginResponse> FacebookLogin(FacebookLoginRequest model, string ipAddress, DeviceDetector deviceDetector);
@@ -47,16 +48,14 @@ namespace DatingApp.API.Services
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
         private readonly IEmailService _emailService;
-        private readonly IUserService _userService;
         private readonly IFacebookService _facebookService;
 
-        public AccountService(DataContext context, IMapper mapper, IOptions<AppSettings> appSettings, IEmailService emailService, IUserService userService, IFacebookService facebookService)
+        public AccountService(DataContext context, IMapper mapper, IOptions<AppSettings> appSettings, IEmailService emailService, IFacebookService facebookService)
         {
             _context = context;
             _mapper = mapper;
             _appSettings = appSettings.Value;
             _emailService = emailService;
-            _userService = userService;
             _facebookService = facebookService;
         }
 
@@ -268,21 +267,39 @@ namespace DatingApp.API.Services
             //return response;
         }
 
-        // Verify email after register
-        public async Task VerifyEmail(string token)
+        // Verify email after registration
+        public async Task VerifyEmail(TokenRequest model)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            // Must use single
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.VerificationToken == model.Token);
             if (user == null)
             {
                 throw new AppException("Verfication failed");
             }
             user.Verified = DateTime.Now;
             user.VerificationToken = null;
-
             _context.Users.Update(user);
             if (await _context.SaveChangesAsync() <= 0)
             {
-                throw new AppException("Failed to verify");
+                throw new AppException("Verfication failed");
+            };
+        }
+        
+        // Verify email after registration
+        public async Task VerifyEmail(string token)
+        {
+            // Must use single
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.VerificationToken == token);
+            if (user == null)
+            {
+                throw new AppException("Verfication failed");
+            }
+            user.Verified = DateTime.Now;
+            user.VerificationToken = null;
+            _context.Users.Update(user);
+            if (await _context.SaveChangesAsync() <= 0)
+            {
+                throw new AppException("Verfication failed");
             };
         }
 
@@ -309,12 +326,11 @@ namespace DatingApp.API.Services
         // Reset password in case user forgot their password
         public async Task ResetPassword(ResetPasswordRequest model)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetToken == model.Token && u.ResetTokenExpires > DateTime.Now);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetToken == model.Token && u.ResetTokenExpires > DateTime.Now && u.FacebookUID == null);
             if (user == null)
             {
                 throw new AppException("Invalid token");
             }
-
             byte[] passwordHash, passwordSalt;
 
             CreatePasswordHash(model.Password, out passwordHash, out passwordSalt);

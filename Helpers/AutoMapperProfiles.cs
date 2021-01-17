@@ -22,9 +22,11 @@ namespace DatingApp.API.Helpers
             CreateMap<User, UserDetailsResponse>()
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.HideAge ? null : src.DateOfBirth));
             CreateMap<User, UserForAdminResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth.HasValue ? src.DateOfBirth : null));
             CreateMap<User, UserDetailsForAdminResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth.HasValue ? src.DateOfBirth : null));
             CreateMap<UpdateRequest, User>()
                 .ForAllMembers(x => x.Condition((src, dest, prop) =>
                 {
@@ -61,8 +63,8 @@ namespace DatingApp.API.Helpers
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
             CreateMap<FacebookLoginResponse, User>();
             CreateMap<User, SimpleUserResponse>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url)); 
-            
+                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
+
             CreateMap<User, MatchReponse>()
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.Order == 0).Url));
 

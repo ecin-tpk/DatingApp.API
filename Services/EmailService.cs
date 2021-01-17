@@ -57,7 +57,8 @@ namespace DatingApp.API.Services
             }
             else
             {
-                var verifyUrl = $"http://localhost:5000/api/account/verify-email?token={user.VerificationToken}";
+                var verifyUrl = $"http://localhost:4200/account/verify-email/{user.VerificationToken}";
+                //var verifyUrl = $"http://localhost:5000/account/verify-email/?token={user.VerificationToken}";
                 message = $@"<p>Please click the link below to verify your email address:</p><p><a href=""{verifyUrl}"">{verifyUrl}</a></p><p><code>{user.VerificationToken}</code></p>";
                 //message = $@"<p>Please use the below token to verify your email address with the <code>/api/account/verify-email</code> api route:</p><p><code>{user.VerificationToken}</code></p>";
             }
@@ -92,7 +93,9 @@ namespace DatingApp.API.Services
             }
             else
             {
-                message = $@"<p>Please use the token below to reset your password with the <code>/account/reset-password</code> api route:</p><p><code>{user.ResetToken}</code></p>";
+                var resetPasswordUrl = $"http://localhost:4200/account/reset-password?token={user.ResetToken}";
+                message = $@"<p>Please click the link below to reset your password, the link will be valid for 1 day:</p><p><a href=""{resetPasswordUrl}"">{resetPasswordUrl}</a></p>";
+                //message = $@"<p>Please use the token below to reset your password with the <code>/account/reset-password</code> api route:</p><p><code>{user.ResetToken}</code></p>";
             }
 
             Send(recipientEmail: user.Email, subject: "Reset your password at DatingApp", htmlBody: $@"<h4>Reset Password Email</h4>{message}");

@@ -37,9 +37,12 @@ namespace DatingApp.API.Controllers
 
             var report = await _reportService.Create(userId, model);
 
-            foreach (var id in _userService.GetAdminIds())
+            if(report != null)
             {
-                await _notificationHub.Clients.User(id.ToString()).SendAsync("ReceiveNotification", report);
+                foreach (var id in _userService.GetAdminIds())
+                {
+                    await _notificationHub.Clients.User(id.ToString()).SendAsync("ReceiveNotification", report);
+                }
             }
 
             return Ok("User reported successfully");

@@ -5,6 +5,7 @@ namespace DatingApp.API.Helpers.RequestParams
     public class ReportParams : PaginationParams
     {
         public ReportStatus Status { get; set; }
-        public ReportParams() : base(10) { }
+        public ReportParams() : base(9) { }
+        public string Gender { get; set; }
     }
 }

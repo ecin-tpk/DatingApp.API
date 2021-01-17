@@ -20,7 +20,7 @@ namespace DatingApp.API.Helpers
 
             var camelCaseFormatter = new JsonSerializerSettings();
             camelCaseFormatter.ContractResolver = new CamelCasePropertyNamesContractResolver();
-             
+
             response.Headers.Add("Pagination", JsonConvert.SerializeObject(paginationHeader, camelCaseFormatter));
             response.Headers.Add("Access-Control-Expose-Headers", "Pagination");
         }
@@ -49,6 +49,19 @@ namespace DatingApp.API.Helpers
                 Expires = DateTime.UtcNow.AddDays(7)
             };
             response.Cookies.Append("refreshToken", token, cookieOptions);
+        }
+
+        // Get which quarter a date belongs to
+        public static int GetQuarter(this DateTime date)
+        {
+            return (date.Month + 2) / 3;
+        }
+
+        public static DateTime GetLocalTime(this double milliseconds)
+        {
+            TimeSpan dateTimeSpan = TimeSpan.FromMilliseconds(milliseconds);
+            DateTime dateAfterEpoch = new DateTime(1970, 1, 1) + dateTimeSpan;
+            return dateAfterEpoch.ToLocalTime();
         }
     }
 }

@@ -16,18 +16,21 @@ namespace DatingApp.API
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false).AddNewtonsoftJson(opt => { opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; });
-            services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false)
+                .AddNewtonsoftJson(opt => { opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; });
+            // For development, remember to set mode in launchSettings
+            //services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            // For production, remember to set mode in launchSettings
+            services.AddDbContext<DataContext>(x => x.UseMySql("server=localhost;port=3306;user=datingappuser;password=2tZSN[F&L)23y=Aw;database=datingapp"));
             services.AddCors();
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
@@ -42,6 +45,7 @@ namespace DatingApp.API
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<ILikeService, LikeService>();
             services.AddScoped<IInterestService, InterestService>();
+            services.AddScoped<IChartService, ChartService>();
 
             services.AddSignalR();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();

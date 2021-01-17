@@ -34,6 +34,9 @@ namespace DatingApp.API.Services
         List<int> GetAdminIds();
 
         Task<double> GetDistance(double latitude, double longitude, int userId);
+
+
+        Task<int> CountUsers(int year);
     }
     #endregion
 
@@ -43,9 +46,9 @@ namespace DatingApp.API.Services
         private readonly IMapper _mapper;
         private readonly ILikeService _likeService;
 
-        public UserService(DataContext contenxt, IMapper mapper, ILikeService likeService)
+        public UserService(DataContext context, IMapper mapper, ILikeService likeService)
         {
-            _context = contenxt;
+            _context = context;
             _mapper = mapper;
             _likeService = likeService;
         }
@@ -59,11 +62,9 @@ namespace DatingApp.API.Services
                     u.Role != Role.Admin &&
                     u.Status == userParams.Status)
                 .AsQueryable();
-
             if (userParams.ForCards)
             {
                 users = await GetUsersForCards(users, userParams);
-
                 return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
             }
             if (userParams.IsMatched)
@@ -313,6 +314,12 @@ namespace DatingApp.API.Services
             return Math.Round(6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)) / 1000), 2);
         }
 
+        // Count users
+        public async Task<int> CountUsers(int year)
+        {
+            return await _context.Users.Where(u => u.Created.Year <= year && u.Role != Role.Admin).CountAsync();
+        }
+
         // Helpers
 
         // Get users for card stack
@@ -347,7 +354,7 @@ namespace DatingApp.API.Services
             }).ToList().Where(u => u.Distance <= userParams.MaxDistance * 1000).Select(u => u.Id);
             users = users.Where(u => inDistance.Contains(u.Id));
 
-            return users.OrderBy(u => u.Created);
+            return users.OrderByDescending(u => u.Created);
         }
 
         // Get users for admin
@@ -434,7 +441,7 @@ namespace DatingApp.API.Services
                     users = users.OrderByDescending(u => u.Verified.HasValue);
                     break;
                 default:
-                    users = users.OrderBy(u => u.Created);
+                    users = users.OrderByDescending(u => u.Created);
                     break;
             }
             return users;

@@ -22,6 +22,8 @@ namespace DatingApp.API.Services
         //Task SetMain(int userId, int photoId);
         Task Delete(int userId, int photoId);
         Task<Photo> GetMainPhoto(int userId);
+
+        Task<int> CountPhotos(double milliseconds);
     }
     #endregion
 
@@ -42,13 +44,11 @@ namespace DatingApp.API.Services
             Account account = new Account(_cloudinarySettings.Value.CloudName, _cloudinarySettings.Value.ApiKey, _cloudinarySettings.Value.ApiSecret);
             _cloudinary = new Cloudinary(account);
         }
-
         // Get photo by id
         public async Task<Photo> GetById(int id)
         {
             return await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
         }
-
         // Save photo url
         public async Task<PhotoResponse> SavePhotoUrl(int userId, UploadRequest model)
         {
@@ -74,7 +74,6 @@ namespace DatingApp.API.Services
 
             throw new AppException("Save photo url failed");
         }
-
         // Change photo order
         public async Task ChangeOrder(int userId, int photoId, byte order)
         {
@@ -114,7 +113,6 @@ namespace DatingApp.API.Services
 
             await _context.SaveChangesAsync();
         }
-
         // Upload image to Cloudinary
         public async Task<PhotoResponse> Upload(int userId, UploadRequest model)
         {
@@ -164,7 +162,6 @@ namespace DatingApp.API.Services
 
             throw new AppException("Upload failed");
         }
-
         //// Set a photo as main photo
         //public async Task SetMain(int userId, int photoId)
         //{
@@ -238,11 +235,17 @@ namespace DatingApp.API.Services
 
             await _context.SaveChangesAsync();
         }
-
         // Get the main photo by userId
         public async Task<Photo> GetMainPhoto(int userId)
         {
             return await _context.Photos.Where(u => u.UserId == userId).SingleOrDefaultAsync(p => p.Order == 0);
+        }
+        // Count number of uploaded photos
+        public async Task<int> CountPhotos(double milliseconds)
+        {
+            TimeSpan dateTimeSpan = TimeSpan.FromMilliseconds(milliseconds);
+            DateTime dateAfterEpoch = new DateTime(1970, 1, 1) + dateTimeSpan;
+            return await _context.Photos.Where(p => p.DateAdded <= dateAfterEpoch.ToLocalTime()).CountAsync();
         }
     }
 }
